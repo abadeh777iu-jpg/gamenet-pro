@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>سیستم جامع مدیریت گیم‌نت | Club Energy Pro</title>
+<meta name="theme-color" content="#020617" />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Vazirmatn', 'system-ui', 'sans-serif'] },
+      boxShadow: {
+        neon: '0 0 20px rgba(16,185,129,.35), 0 0 60px rgba(16,185,129,.08)',
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { scrollbar-width: thin; scrollbar-color: #334155 transparent; }
+  *::-webkit-scrollbar { width:8px; height:8px; }
+  *::-webkit-scrollbar-thumb { background:#334155; border-radius:8px; }
+  body {
+    font-family: 'Vazirmatn', system-ui, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 90% -10%, rgba(16,185,129,.12), transparent 50%),
+      radial-gradient(900px 500px at 10% 110%, rgba(139,92,246,.12), transparent 50%),
+      radial-gradient(700px 400px at 50% 50%, rgba(56,189,248,.05), transparent 60%),
+      #020617;
+    min-height:100vh;
+    color:#e2e8f0;
+  }
+  .glass {
+    background: linear-gradient(160deg, rgba(15,23,42,.92), rgba(2,6,23,.88));
+    border: 1px solid rgba(148,163,184,.12);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  }
+  .glass:hover { border-color: rgba(148,163,184,.22); }
+  .tab-btn.active, .side-link.active {
+    background: linear-gradient(135deg, rgba(16,185,129,.2), rgba(139,92,246,.15));
+    border-color: rgba(16,185,129,.5);
+    color:#6ee7b7;
+    box-shadow: 0 0 16px rgba(16,185,129,.2);
+  }
+  .status-free { box-shadow: 0 0 0 1px rgba(16,185,129,.4), 0 0 24px rgba(16,185,129,.15); }
+  .status-busy { box-shadow: 0 0 0 1px rgba(251,113,133,.45), 0 0 24px rgba(251,113,133,.15); }
+  .status-pause { box-shadow: 0 0 0 1px rgba(251,191,36,.45), 0 0 24px rgba(251,191,36,.12); }
+  .status-warn { animation: pulseWarn 1s ease-in-out infinite; }
+  @keyframes pulseWarn {
+    0%,100% { box-shadow: 0 0 0 1px rgba(251,191,36,.6), 0 0 20px rgba(251,191,36,.25); }
+    50% { box-shadow: 0 0 0 3px rgba(251,191,36,.25), 0 0 40px rgba(251,191,36,.45); }
+  }
+  @keyframes glowDot { 0%,100%{opacity:1} 50%{opacity:.35} }
+  .dot-live { animation: glowDot 1.2s ease-in-out infinite; }
+  .modal-back { background: rgba(2,6,23,.75); backdrop-filter: blur(6px); }
+  .fade-in { animation: fadeIn .22s ease-out; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+  .num { font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+  input, select, textarea, button { font-family: inherit; }
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:.45rem;
+    border-radius:.75rem; font-weight:700; font-size:.8rem; padding:.55rem 1rem;
+    transition: all .15s ease; cursor:pointer; border:1px solid transparent;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-neon { background:linear-gradient(135deg,#059669,#10b981); color:#020617; box-shadow:0 0 16px rgba(16,185,129,.35); }
+  .btn-neon:hover { filter:brightness(1.1); box-shadow:0 0 24px rgba(16,185,129,.5); }
+  .btn-purple { background:linear-gradient(135deg,#7c3aed,#a78bfa); color:#fff; }
+  .btn-rose { background:linear-gradient(135deg,#e11d48,#fb7185); color:#fff; }
+  .btn-amber { background:linear-gradient(135deg,#d97706,#fbbf24); color:#1e1b04; }
+  .btn-blue { background:linear-gradient(135deg,#0284c7,#38bdf8); color:#082f49; }
+  .btn-ghost { background:rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.25); color:#cbd5e1; }
+  .btn-ghost:hover { background:rgba(148,163,184,.16); }
+  .field {
+    width:100%; background:#020617; border:1px solid rgba(148,163,184,.25);
+    border-radius:.7rem; padding:.6rem .85rem; color:#f1f5f9; font-size:.9rem;
+    outline:none; transition: border .15s, box-shadow .15s;
+  }
+  .field:focus { border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.2); }
+  .chip { display:inline-flex; align-items:center; gap:.3rem; border-radius:999px; padding:.15rem .6rem; font-size:.7rem; font-weight:700; }
+  table.tx th { font-size:.72rem; color:#94a3b8; padding:.55rem .6rem; text-align:right; font-weight:700; }
+  table.tx td { font-size:.8rem; padding:.55rem .6rem; border-top:1px solid rgba(148,163,184,.08); }
+  table.tx tr:hover td { background:rgba(148,163,184,.04); }
+  #receipt-print { display:none; }
+  @media print {
+    body * { visibility: hidden !important; }
+    #receipt-print, #receipt-print * { visibility: visible !important; }
+    #receipt-print {
+      display: block !important; position: absolute; left:0; top:0;
+      width: 80mm; padding: 4mm 3mm; background:#fff; color:#000;
+      font-family: 'Vazirmatn', Tahoma, sans-serif; font-size: 11px; direction: rtl;
+    }
+    @page { size: 80mm auto; margin: 0; }
+  }
+  .side-link { display:flex; align-items:center; gap:.65rem; padding:.65rem .85rem; border-radius:.75rem; color:#94a3b8; font-size:.85rem; font-weight:600; cursor:pointer; border:1px solid transparent; }
+  .side-link:hover { background:rgba(148,163,184,.08); color:#e2e8f0; }
+  .alarm-flash { animation: alarmFlash .5s ease-in-out infinite; }
+  @keyframes alarmFlash {
+    0%,100% { background: linear-gradient(160deg, rgba(251,191,129,.25), rgba(15,23,42,.95)); }
+    50% { background: linear-gradient(160deg, rgba(251,113,133,.4), rgba(69,26,3,.9)); }
+  }
+</style>
+</head>
+<body class="antialiased">
+<div class="flex min-h-screen">
+  <aside class="hidden lg:flex flex-col w-60 shrink-0 border-l border-white/5 glass m-3 mr-0 rounded-2xl p-3 gap-1 sticky top-3 h-[calc(100vh-1.5rem)]">
+    <div class="flex items-center gap-2 px-2 py-3 mb-2">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-violet-500 flex items-center justify-center text-slate-900 font-black shadow-neon">
+        <i class="fa-solid fa-gamepad"></i>
+      </div>
+      <div>
+        <div class="font-extrabold text-sm text-white leading-tight">کلاب انرژی</div>
+        <div class="text-[10px] text-emerald-400 font-bold">GAMENET PRO</div>
+      </div>
+    </div>
+    <div class="side-link active" data-view="dashboard"><i class="fa-solid fa-chart-pie w-5"></i> داشبورد</div>
+    <div class="side-link" data-view="devices"><i class="fa-solid fa-tv w-5"></i> دستگاه‌ها <span id="badge-busy" class="mr-auto chip bg-rose-500/20 text-rose-300 border border-rose-500/30">0</span></div>
+    <div class="side-link" data-view="buffet"><i class="fa-solid fa-burger w-5"></i> بوفه</div>
+    <div class="side-link" data-view="accounting"><i class="fa-solid fa-calculator w-5"></i> حسابداری</div>
+    <div class="side-link" data-view="settings"><i class="fa-solid fa-gear w-5"></i> تنظیمات</div>
+    <div class="side-link gated-admin hidden" data-view="admin"><i class="fa-solid fa-user-shield w-5"></i> پنل مدیریت</div>
+    <div class="side-link" data-view="payment"><i class="fa-solid fa-credit-card w-5"></i> دریافت وجه</div>
+    <div class="mt-auto px-2 py-3 border-t border-white/5">
+      <div class="text-[10px] text-slate-500 mb-1">تاریخ امروز</div>
+      <div id="side-date" class="text-xs font-bold text-slate-300 num">—</div>
+      <div id="side-clock" class="text-lg font-black text-emerald-400 num mt-0.5">—</div>
+    </div>
+  </aside>
+  <div class="flex-1 min-w-0 p-3 lg:p-4 pb-24 lg:pb-4">
+    <header class="glass rounded-2xl px-4 py-3 mb-4 flex items-center justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-3">
+        <div class="lg:hidden w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-violet-500 flex items-center justify-center text-slate-900 font-black">
+          <i class="fa-solid fa-gamepad"></i>
+        </div>
+        <div>
+          <h1 id="view-title" class="font-extrabold text-base lg:text-lg text-white">داشبورد</h1>
+          <p id="view-sub" class="text-[11px] text-slate-400">نمای کلی درآمد و دستگاه‌ها</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="hidden sm:flex chip bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+          <i class="fa-solid fa-circle text-[8px] dot-live"></i><span id="top-free">۰ آزاد</span>
+        </div>
+        <div class="hidden sm:flex chip bg-rose-500/15 text-rose-300 border border-rose-500/30">
+          <i class="fa-solid fa-circle text-[8px]"></i><span id="top-busy">۰ مشغول</span>
+        </div>
+        <button class="btn btn-ghost" onclick="App.exportBackup()" title="دانلود بک‌آپ"><i class="fa-solid fa-download"></i><span class="hidden sm:inline">بک‌آپ</span></button>
+        <label class="btn btn-ghost cursor-pointer" title="بازیابی بک‌آپ">
+          <i class="fa-solid fa-upload"></i><span class="hidden sm:inline">بازیابی</span>
+          <input type="file" accept="application/json" class="hidden" onchange="App.importBackup(this)">
+        </label>
+      </div>
+    </header>
+    <nav class="lg:hidden flex gap-2 overflow-x-auto pb-2 mb-3 -mx-1 px-1">
+      <button class="tab-btn active btn btn-ghost !text-xs shrink-0" data-view="dashboard">داشبورد</button>
+      <button class="tab-btn btn btn-ghost !text-xs shrink-0" data-view="devices">دستگاه‌ها</button>
+      <button class="tab-btn btn btn-ghost !text-xs shrink-0" data-view="buffet">بوفه</button>
+      <button class="tab-btn btn btn-ghost !text-xs shrink-0" data-view="accounting">حسابداری</button>
+      <button class="tab-btn btn btn-ghost !text-xs shrink-0" data-view="settings">تنظیمات</button>
+      <button class="tab-btn gated-admin hidden btn btn-ghost !text-xs shrink-0" data-view="admin">مدیریت</button>
+      <button class="tab-btn btn btn-ghost !text-xs shrink-0" data-view="payment">دریافت وجه</button>
+    </nav>
+
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view">
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-4">
+        <div class="glass rounded-2xl p-4 fade-in">
+          <div class="flex items-center justify-between mb-2"><span class="text-[11px] text-slate-400 font-bold">درآمد امروز</span><i class="fa-solid fa-sack-dollar text-emerald-400"></i></div>
+          <div id="kpi-today" class="text-xl lg:text-2xl font-black text-white num">۰ تومان</div>
+          <div class="text-[10px] text-slate-500 mt-1">شامل کنسول + بوفه</div>
+        </div>
+        <div class="glass rounded-2xl p-4 fade-in">
+          <div class="flex items-center justify-between mb-2"><span class="text-[11px] text-slate-400 font-bold">سهم کنسول</span><i class="fa-solid fa-gamepad text-violet-400"></i></div>
+          <div id="kpi-game" class="text-xl lg:text-2xl font-black text-violet-300 num">۰ تومان</div>
+          <div class="text-[10px] text-slate-500 mt-1">تایمرهای تسویه‌شده</div>
+        </div>
+        <div class="glass rounded-2xl p-4 fade-in">
+          <div class="flex items-center justify-between mb-2"><span class="text-[11px] text-slate-400 font-bold">سهم بوفه</span><i class="fa-solid fa-burger text-amber-400"></i></div>
+          <div id="kpi-buffet" class="text-xl lg:text-2xl font-black text-amber-300 num">۰ تومان</div>
+          <div class="text-[10px] text-slate-500 mt-1">فروش امروز</div>
+        </div>
+        <div class="glass rounded-2xl p-4 fade-in">
+          <div class="flex items-center justify-between mb-2"><span class="text-[11px] text-slate-400 font-bold">دستگاه فعال</span><i class="fa-solid fa-bolt text-sky-400"></i></div>
+          <div id="kpi-active" class="text-xl lg:text-2xl font-black text-sky-300 num">۰ / ۰</div>
+          <div class="text-[10px] text-slate-500 mt-1">مشغول از کل</div>
+        </div>
+      </div>
+      <div class="grid lg:grid-cols-3 gap-3 mb-4">
+        <div class="glass rounded-2xl p-4 lg:col-span-2">
+          <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-chart-line text-emerald-400 ml-1"></i> درآمد ۷ روز اخیر</h3>
+          <div class="h-52"><canvas id="chart-week"></canvas></div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-clock text-violet-400 ml-1"></i> دستگاه‌های فعال</h3>
+          <div id="dash-active-list" class="space-y-2 max-h-52 overflow-auto pl-1"></div>
+        </div>
+      </div>
+      <div class="glass rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-extrabold text-sm text-white"><i class="fa-solid fa-receipt text-sky-400 ml-1"></i> آخرین تراکنش‌ها</h3>
+          <button class="btn btn-ghost !py-1 !px-2 !text-[11px]" onclick="App.switchView('accounting')">مشاهده همه</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="tx w-full"><thead><tr><th>شماره</th><th>زمان</th><th>نوع</th><th>پرداخت</th><th>مبلغ</th></tr></thead><tbody id="dash-tx-body"></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEVICES -->
+    <section id="view-devices" class="view hidden">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div class="flex gap-2">
+          <button class="btn btn-neon" onclick="App.openQuickSale()"><i class="fa-solid fa-bolt"></i> فروش سریع بوفه</button>
+          <button class="btn btn-ghost" onclick="App.openDeviceManager()"><i class="fa-solid fa-plus"></i> افزودن دستگاه</button>
+        </div>
+        <div class="text-[11px] text-slate-500">زمان‌ها با <span class="text-emerald-400 font-bold">Date.now()</span> محاسبه می‌شوند — بدون خطا حتی در مینیمایز</div>
+      </div>
+      <div id="devices-grid" class="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3"></div>
+    </section>
+
+    <!-- BUFFET -->
+    <section id="view-buffet" class="view hidden">
+      <div class="grid lg:grid-cols-3 gap-3">
+        <div class="lg:col-span-2 glass rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h3 class="font-extrabold text-sm text-white"><i class="fa-solid fa-list text-amber-400 ml-1"></i> منوی بوفه</h3>
+            <button class="btn btn-neon !py-1.5" onclick="App.openMenuItem()"><i class="fa-solid fa-plus"></i> قلم جدید</button>
+          </div>
+          <div id="buffet-grid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2"></div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-cart-shopping text-emerald-400 ml-1"></i> فروش سریع (پیشخوان)</h3>
+          <div id="quick-sale-box" class="space-y-2"><p class="text-xs text-slate-500">روی کارت محصول بزنید تا به سبد اضافه شود.</p></div>
+          <div class="mt-3 pt-3 border-t border-white/10">
+            <div class="flex justify-between text-xs text-slate-400 mb-1"><span>جمع سبد</span><span id="qs-total" class="font-black text-white num">۰ تومان</span></div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost flex-1" onclick="App.clearQuickSale()"><i class="fa-solid fa-trash"></i></button>
+              <button class="btn btn-neon flex-1" onclick="App.finishQuickSale()"><i class="fa-solid fa-check"></i> ثبت فروش</button>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/10">
+            <div class="text-[11px] text-slate-500 mb-1">موجودی کل (خرید)</div>
+            <div id="qs-stock" class="text-xs text-slate-400 num">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCOUNTING -->
+    <section id="view-accounting" class="view hidden">
+      <div class="grid xl:grid-cols-3 gap-3 mb-4">
+        <div class="glass rounded-2xl p-4 xl:col-span-2">
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h3 class="font-extrabold text-sm text-white"><i class="fa-solid fa-file-invoice-dollar text-emerald-400 ml-1"></i> بستن صندوق / پایان شیفت</h3>
+            <div class="flex gap-2">
+              <button class="btn btn-rose !py-1.5" onclick="App.closeShift()"><i class="fa-solid fa-lock"></i> بستن دخل امروز</button>
+              <button class="btn btn-amber !py-1.5" onclick="App.openExpense()"><i class="fa-solid fa-money-bill-transfer"></i> ثبت هزینه</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5"><div class="text-[10px] text-slate-500">مجموع درآمد</div><div id="shift-total" class="font-black text-emerald-400 num text-sm">۰</div></div>
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5"><div class="text-[10px] text-slate-500">نقد</div><div id="shift-cash" class="font-black text-white num text-sm">۰</div></div>
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5"><div class="text-[10px] text-slate-500">کارت‌خوان</div><div id="shift-pos" class="font-black text-sky-300 num text-sm">۰</div></div>
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5"><div class="text-[10px] text-slate-500">کارت به کارت</div><div id="shift-transfer" class="font-black text-violet-300 num text-sm">۰</div></div>
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5"><div class="text-[10px] text-slate-500">سهم کنسول</div><div id="shift-game" class="font-black text-violet-400 num text-sm">۰</div></div>
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5"><div class="text-[10px] text-slate-500">سهم بوفه</div><div id="shift-buffet" class="font-black text-amber-400 num text-sm">۰</div></div>
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5"><div class="text-[10px] text-slate-500">هزینه‌ها</div><div id="shift-expense" class="font-black text-rose-400 num text-sm">۰</div></div>
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5"><div class="text-[10px] text-slate-500">سود خالص</div><div id="shift-net" class="font-black text-emerald-300 num text-sm">۰</div></div>
+          </div>
+          <div class="h-44"><canvas id="chart-pay"></canvas></div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-receipt text-rose-400 ml-1"></i> هزینه‌های امروز</h3>
+          <div id="expense-list" class="space-y-2 max-h-64 overflow-auto pl-1 text-xs"></div>
+          <button class="btn btn-ghost w-full mt-3 !text-xs" onclick="App.openExpense()"><i class="fa-solid fa-plus"></i> افزودن هزینه</button>
+        </div>
+      </div>
+      <div class="glass rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h3 class="font-extrabold text-sm text-white"><i class="fa-solid fa-table-list text-sky-400 ml-1"></i> تاریخچه تراکنش‌ها</h3>
+          <div class="flex gap-2 flex-wrap">
+            <input id="tx-search" class="field !w-48 !py-1.5 !text-xs" placeholder="جستجو…" oninput="App.renderTransactions()">
+            <select id="tx-type-filter" class="field !w-32 !py-1.5 !text-xs" onchange="App.renderTransactions()">
+              <option value="">همه</option><option value="session">بازی</option><option value="buffet">بوفه</option>
+            </select>
+          </div>
+        </div>
+        <div class="overflow-x-auto max-h-96 overflow-y-auto">
+          <table class="tx w-full">
+            <thead class="sticky top-0 bg-[#0f172a]"><tr><th>شماره</th><th>تاریخ/ساعت</th><th>شرح</th><th>پرداخت</th><th>بازی</th><th>بوفه</th><th>تخفیف</th><th>جمع</th><th></th></tr></thead>
+            <tbody id="tx-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view hidden">
+      <div class="grid lg:grid-cols-2 gap-3">
+        <div class="glass rounded-2xl p-4">
+          <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-tags text-emerald-400 ml-1"></i> تعرفه ساعتی (تومان / ساعت)</h3>
+          <p class="text-[11px] text-slate-500 mb-3">نرخ هر نوع دستگاه بر اساس تعداد دسته/بازیکن — تغییرات بلادرنگ اعمال می‌شود.</p>
+          <div class="overflow-x-auto">
+            <table class="tx w-full">
+              <thead><tr><th>نوع دستگاه</th><th>۱ نفره</th><th>۲ نفره</th><th>۳ نفره</th><th>۴ نفره</th></tr></thead>
+              <tbody id="tariff-body"></tbody>
+            </table>
+          </div>
+          <button class="btn btn-neon mt-3 w-full" onclick="App.saveTariffs()"><i class="fa-solid fa-floppy-disk"></i> ذخیره تعرفه‌ها</button>
+        </div>
+        <div class="space-y-3">
+          <div class="glass rounded-2xl p-4">
+            <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-sliders text-violet-400 ml-1"></i> قوانین صورتحساب</h3>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div><label class="text-[11px] text-slate-400 font-bold">حداقل هزینه بازی (دقیقه)</label><input id="set-min-minutes" type="number" min="0" class="field mt-1" /></div>
+              <div><label class="text-[11px] text-slate-400 font-bold">رند کردن خودکار</label>
+                <select id="set-round" class="field mt-1"><option value="0">بدون رند</option><option value="1000">رند به ۱,۰۰۰</option><option value="5000">رند به ۵,۰۰۰</option></select>
+              </div>
+              <div><label class="text-[11px] text-slate-400 font-bold">هشدار پایان (ثانیه قبل)</label><input id="set-warn-secs" type="number" min="0" max="300" class="field mt-1" /></div>
+              <div><label class="text-[11px] text-slate-400 font-bold">نام گیم‌نت</label><input id="set-club-name" type="text" class="field mt-1" /></div>
+            </div>
+            <button class="btn btn-purple mt-3 w-full" onclick="App.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> ذخیره تنظیمات</button>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-database text-sky-400 ml-1"></i> پشتیبان‌گیری و بازنشانی</h3>
+            <div class="flex flex-wrap gap-2">
+              <button class="btn btn-neon" onclick="App.exportBackup()"><i class="fa-solid fa-download"></i> دانلود بک‌آپ JSON</button>
+              <label class="btn btn-blue cursor-pointer"><i class="fa-solid fa-upload"></i> بازیابی از فایل
+                <input type="file" accept="application/json" class="hidden" onchange="App.importBackup(this)">
+              </label>
+              <button class="btn btn-rose" onclick="App.resetDaily()"><i class="fa-solid fa-rotate-left"></i> پاک‌سازی آمار روزانه</button>
+              <button class="btn btn-ghost" onclick="App.hardReset()"><i class="fa-solid fa-triangle-exclamation"></i> ریست کامل</button>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-3">همه داده‌ها در localStorage ذخیره می‌شوند. رفرش صفحه هیچ داده‌ای را از بین نمی‌برد.</p>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-gamepad text-amber-400 ml-1"></i> مدیریت دستگاه‌ها</h3>
+            <div id="device-manage-list" class="space-y-2 max-h-56 overflow-auto pl-1"></div>
+            <button class="btn btn-ghost w-full mt-3" onclick="App.openDeviceManager()"><i class="fa-solid fa-plus"></i> افزودن دستگاه</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+    <!-- PAYMENT -->
+    <section id="view-payment" class="view hidden">
+      <div class="grid lg:grid-cols-3 gap-3">
+        <div class="glass rounded-2xl p-5 lg:col-span-2">
+          <h3 class="font-extrabold text-base text-white mb-1"><i class="fa-solid fa-credit-card text-emerald-400 ml-2"></i> دریافت وجه از مشتری</h3>
+          <p class="text-[11px] text-slate-500 mb-4">شماره کارت و اطلاعات واریزی را ثبت کنید. روی کارت بزنید تا کپی شود.</p>
+          <div class="grid sm:grid-cols-2 gap-3 mb-4" id="pay-cards-grid"></div>
+          <button class="btn btn-neon !text-xs" onclick="App.openPayCard()"><i class="fa-solid fa-plus"></i> افزودن کارت</button>
+        </div>
+        <div class="glass rounded-2xl p-5">
+          <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-money-check-dollar text-sky-400 ml-2"></i> واریزی‌های ثبت‌شده</h3>
+          <div class="space-y-2 max-h-80 overflow-auto pl-1 mb-3" id="pay-log-list"></div>
+          <button class="btn btn-blue w-full !text-xs" onclick="App.openPayLog()"><i class="fa-solid fa-plus"></i> ثبت واریزی جدید</button>
+          <div class="mt-4 pt-3 border-t border-white/10">
+            <div class="flex justify-between text-xs"><span class="text-slate-400">جمع واریزی‌ها</span><span id="pay-log-total" class="font-black text-emerald-400 num">۰ تومان</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="view-admin" class="view hidden">
+      <div class="glass rounded-2xl p-5 mb-3 border-amber-500/30">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h3 class="font-extrabold text-base text-white"><i class="fa-solid fa-lock text-amber-400 ml-2"></i> پنل مدیریت مالک</h3>
+            <p class="text-[11px] text-slate-500 mt-1">رمز پیش‌فرض: <span class="text-amber-300 font-bold">1234</span> — قابل تغییر.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="admin-lock-badge" class="chip bg-rose-500/20 text-rose-300 border border-rose-500/40"><i class="fa-solid fa-lock"></i> قفل</span>
+            <button id="admin-unlock-btn" class="btn btn-amber !text-xs" onclick="App.adminUnlock()"><i class="fa-solid fa-key"></i> ورود</button>
+            <button id="admin-lock-btn" class="btn btn-ghost !text-xs hidden" onclick="App.adminLock()"><i class="fa-solid fa-lock"></i> خروج</button>
+          </div>
+        </div>
+        <div id="admin-unlock-row" class="mt-4 hidden">
+          <div class="flex gap-2 max-w-md">
+            <input id="admin-pass-input" type="password" class="field flex-1" placeholder="رمز عبور پنل مدیریت" onkeydown="if(event.key==='Enter')App.adminUnlock()">
+            <button class="btn btn-amber" onclick="App.adminUnlock()">ورود</button>
+          </div>
+        </div>
+      </div>
+      <div id="admin-body" class="hidden space-y-3">
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+          <div class="glass rounded-2xl p-4"><div class="text-[11px] text-slate-400 mb-1">کل درآمد تاریخچه</div><div id="adm-total" class="font-black text-emerald-400 num text-lg">۰</div></div>
+          <div class="glass rounded-2xl p-4"><div class="text-[11px] text-slate-400 mb-1">تعداد تراکنش</div><div id="adm-txcount" class="font-black text-white num text-lg">۰</div></div>
+          <div class="glass rounded-2xl p-4"><div class="text-[11px] text-slate-400 mb-1">کل هزینه‌ها</div><div id="adm-exp" class="font-black text-rose-400 num text-lg">۰</div></div>
+          <div class="glass rounded-2xl p-4"><div class="text-[11px] text-slate-400 mb-1">سود خالص تاریخچه</div><div id="adm-net" class="font-black text-sky-300 num text-lg">۰</div></div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h3 class="font-extrabold text-sm text-white"><i class="fa-solid fa-table-list text-violet-400 ml-1"></i> تراکنش‌های اخیر (همه)</h3>
+            <input id="adm-tx-search" class="field !w-48 !py-1.5 !text-xs" placeholder="جستجو…" oninput="App.renderAdmin()">
+          </div>
+          <div class="overflow-x-auto max-h-72 overflow-y-auto">
+            <table class="tx w-full">
+              <thead class="sticky top-0 bg-[#0f172a]"><tr><th>شماره</th><th>تاریخ</th><th>شرح</th><th>مبلغ</th><th></th></tr></thead>
+              <tbody id="adm-tx-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-sliders text-emerald-400 ml-1"></i> تنظیمات امنیتی و سیستم</h3>
+          <div class="grid sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="text-[11px] text-slate-400 font-bold">رمز جدید پنل مدیریت</label>
+              <div class="flex gap-2 mt-1">
+                <input id="adm-new-pass" type="password" class="field flex-1" placeholder="رمز جدید…">
+                <button class="btn btn-purple !text-xs" onclick="App.adminChangePass()">تغییر رمز</button>
+              </div>
+            </div>
+            <div>
+              <label class="text-[11px] text-slate-400 font-bold">نام صاحب مغازه (روی رسید)</label>
+              <div class="flex gap-2 mt-1">
+                <input id="adm-owner-name" class="field flex-1" placeholder="مثلاً علی رضایی">
+                <button class="btn btn-neon !text-xs" onclick="App.saveOwnerName()">ذخیره</button>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn btn-ghost !text-xs" onclick="App.exportBackup()"><i class="fa-solid fa-download"></i> بک‌آپ کامل JSON</button>
+            <label class="btn btn-blue !text-xs cursor-pointer"><i class="fa-solid fa-upload"></i> بازیابی بک‌آپ
+              <input type="file" accept="application/json" class="hidden" onchange="App.importBackup(this)">
+            </label>
+            <button class="btn btn-amber !text-xs" onclick="App.resetDaily()"><i class="fa-solid fa-rotate-left"></i> پاک‌سازی آمار روزانه</button>
+            <button class="btn btn-rose !text-xs" onclick="App.hardReset()"><i class="fa-solid fa-triangle-exclamation"></i> ریست کامل سیستم</button>
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <h3 class="font-extrabold text-sm text-white mb-3"><i class="fa-solid fa-chart-pie text-sky-400 ml-1"></i> آمار پیشرفته</h3>
+          <div class="grid md:grid-cols-2 gap-3">
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5">
+              <div class="text-[11px] text-slate-400 mb-2">سهم دستگاه‌ها (کل درآمد بازی)</div>
+              <div id="adm-device-stats" class="space-y-1.5 text-xs"></div>
+            </div>
+            <div class="rounded-xl bg-black/30 p-3 border border-white/5">
+              <div class="text-[11px] text-slate-400 mb-2">سهم پرداخت‌ها</div>
+              <div id="adm-pay-stats" class="space-y-1.5 text-xs"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<div id="modal-root"></div>
+<div id="receipt-print"></div>
+<div id="toast-root" class="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 items-center pointer-events-none"></div>
+
+<script>
+/* ═══ Club Energy Pro — Single-file SPA ═══ */
+const App = (() => {
+  'use strict';
+  const FA = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+  const toFa = s => String(s).replace(/\d/g, d => FA[+d]);
+  const nf = n => toFa(Math.round(Number(n)||0).toLocaleString('en-US'));
+  const money = n => nf(n) + ' تومان';
+  const P2 = n => String(n).padStart(2,'0');
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  const div = (a,b) => Math.floor(a/b);
+
+  /* Jalali (compact jalaali algorithm) */
+  function jalCal(jy){
+    const breaks=[-61,9,38,199,426,686,756,818,1111,1181,1210,1635,1701,1866,2020,2449];
+    let bl=breaks.length, gy=jy+621, leapJ=-14, jp=breaks[0], jm, jump, n, i;
+    if(jy<jp||jy>=breaks[bl-1]) throw new Error('bad jy');
+    for(i=1;i<bl;i++){ jm=breaks[i]; jump=jm-jp; if(jy<jm) break; leapJ=leapJ+div(jump,33)*8+div(jump%33,4); jp=jm; }
+    n=jy-jp; leapJ=leapJ+div(n,33)*8+div(n%33+3,4); if((jump%33)===4&&(jump-n)===4) leapJ+=1;
+    const leapG=div(gy,4)-div((div(gy,100)+1)*3,4)-150;
+    const march=20+leapJ-leapG;
+    if((jump-n)<6) n=n-jump+div(jump+4,33)*33;
+    let leap=((n+1)%33-1)%4; if(leap===-1) leap=4;
+    return { leap, gy, march };
+  }
+  /* Gregorian → Julian Day Number (Fliegel–Van Flandern; integer-safe) */
+  function jdnOf(gy,gm,gd){
+    const a=div(14-gm,12), y=gy+4800-a, m=gm+12*a-3;
+    return gd+div(153*m+2,5)+365*y+div(y,4)-div(y,100)+div(y,400)-32045;
+  }
+  function jalCal(jy){
+    const breaks=[-61,9,38,199,426,686,756,818,1111,1181,1210,1635,1701,1866,2020,2449];
+    let bl=breaks.length, gy=jy+621, leapJ=-14, jp=breaks[0], jm, jump, n, i;
+    if(jy<jp||jy>=breaks[bl-1]) throw new Error('bad jy');
+    for(i=1;i<bl;i++){ jm=breaks[i]; jump=jm-jp; if(jy<jm) break; leapJ=leapJ+div(jump,33)*8+div(jump%33,4); jp=jm; }
+    n=jy-jp; leapJ=leapJ+div(n,33)*8+div(n%33+3,4); if((jump%33)===4&&(jump-n)===4) leapJ+=1;
+    const leapG=div(gy,4)-div((div(gy,100)+1)*3,4)-150;
+    const march=20+leapJ-leapG;
+    if((jump-n)<6) n=n-jump+div(jump+4,33)*33;
+    let leap=((n+1)%33-1)%4; if(leap===-1) leap=4;
+    return { leap, gy, march };
+  }
+  /* day-offset within a Jalali year (0 = 1 Farvardin) → {jm,jd} */
+  function jalSplit(offset, jy){
+    const md=[31,31,31,31,31,31,30,30,30,30,30,(jalCal(jy).leap?30:29)];
+    let cum=0;
+    for(let m=0;m<12;m++){
+      if(offset<cum+md[m]) return {jm:m+1, jd:offset-cum+1};
+      cum+=md[m];
+    }
+    return {jm:12, jd:md[11]};
+  }
+  function jalaliOf(date){
+    const jy0=date.getFullYear()-621;
+    let diff=jdnOf(date.getFullYear(), date.getMonth()+1, date.getDate())-jdnOf(date.getFullYear(), 3, jalCal(jy0).march);
+    let jy=jy0;
+    if(diff<0){ jy=jy0-1; diff=jdnOf(date.getFullYear(), date.getMonth()+1, date.getDate())-jdnOf(date.getFullYear()-1, 3, jalCal(jy).march); }
+    else if(diff>=(jalCal(jy0).leap?366:365)){ jy=jy0+1; diff-=(jalCal(jy0).leap?366:365); }
+    const s=jalSplit(diff, jy);
+    return {jy, jm:s.jm, jd:s.jd};
+  }
+  function fmtJDate(date){
+    try{
+      const j=jalaliOf(date);
+      const months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+      return toFa(j.jd)+' '+months[j.jm-1]+' '+toFa(j.jy);
+    }catch(e){ return date.toLocaleDateString('fa-IR'); }
+  }
+  function fmtTime(ts){ const d=new Date(ts); return toFa(P2(d.getHours())+':'+P2(d.getMinutes())); }
+  function fmtDateTime(ts){ return fmtJDate(new Date(ts))+' — '+fmtTime(ts); }
+  function fmtDuration(ms){
+    if(ms<0)ms=0;
+    const t=Math.floor(ms/1000), h=Math.floor(t/3600), m=Math.floor((t%3600)/60), s=t%60;
+    return h>0 ? toFa(h)+':'+P2(m)+':'+P2(s) : toFa(P2(m))+':'+P2(s);
+  }
+  function fmtDurationLong(ms){
+    if(ms<0)ms=0;
+    const t=Math.floor(ms/60000), h=Math.floor(t/60), m=t%60;
+    return h>0 ? toFa(h)+' ساعت و '+toFa(m)+' دقیقه' : toFa(m)+' دقیقه';
+  }
+  function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+P2(d.getMonth()+1)+'-'+P2(d.getDate()); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* Audio alarm */
+  let audioCtx=null;
+  function beep(times=3){
+    try{
+      audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state==='suspended') audioCtx.resume();
+      let t0=audioCtx.currentTime;
+      for(let i=0;i<times;i++){
+        const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.type='square'; o.frequency.value=880;
+        g.gain.setValueAtTime(0.001,t0);
+        g.gain.exponentialRampToValueAtTime(0.25,t0+0.02);
+        g.gain.exponentialRampToValueAtTime(0.001,t0+0.28);
+        o.start(t0); o.stop(t0+0.3); t0+=0.35;
+      }
+    }catch(e){}
+  }
+  function toast(msg, type='ok'){
+    const root=document.getElementById('toast-root');
+    const el=document.createElement('div');
+    const color = type==='err'?'from-rose-600 to-rose-500':type==='warn'?'from-amber-500 to-orange-500':'from-emerald-600 to-emerald-500';
+    el.className='pointer-events-auto px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-l '+color+' shadow-lg fade-in';
+    el.textContent=msg;
+    root.appendChild(el);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); },2800);
+  }
+
+  /* State */
+  const LS_KEY='gamenet_pro_v1';
+  const DEVICE_TYPES=[
+    {key:'ps5',label:'PS5'},{key:'ps4',label:'PS4'},{key:'xbox',label:'Xbox Series X'},
+    {key:'pcvip',label:'PC VIP'},{key:'pc',label:'PC Gaming'},{key:'vr',label:'VR'},
+    {key:'billiard',label:'بیلیارد'},{key:'viproom',label:'اتاق VIP'},
+  ];
+  function defaultTariffs(){
+    return {
+      ps5:[80000,110000,130000,150000], ps4:[60000,90000,110000,130000],
+      xbox:[70000,100000,120000,140000], pcvip:[50000,80000,100000,120000],
+      pc:[40000,70000,90000,110000], vr:[90000,120000,140000,160000],
+      billiard:[40000,70000,90000,110000], viproom:[120000,160000,190000,220000],
+    };
+  }
+  function defaultDevices(){
+    const t=(type,name,number)=>({id:uid(),type,name,number,enabled:true});
+    return [
+      t('ps5','PS5',1),t('ps5','PS5',2),t('ps4','PS4',1),t('ps4','PS4',2),
+      t('xbox','Xbox Series X',1),t('pcvip','PC VIP',1),t('pcvip','PC VIP',2),
+      t('pc','PC Gaming',1),t('vr','VR',1),t('vr','VR',2),
+      t('billiard','بیلیارد',1),t('billiard','بیلیارد',2),
+    ];
+  }
+  function defaultBuffet(){
+    return [
+      {id:uid(),name:'نوشابه کوکا',buy:8000,sell:15000,stock:48},
+      {id:uid(),name:'نوشابه زیرآب',buy:7000,sell:14000,stock:36},
+      {id:uid(),name:'آب معدنی',buy:3000,sell:8000,stock:60},
+      {id:uid(),name:'چیپس',buy:12000,sell:25000,stock:30},
+      {id:uid(),name:'پفک',buy:10000,sell:20000,stock:25},
+      {id:uid(),name:'کیک شکلاتی',buy:18000,sell:35000,stock:15},
+      {id:uid(),name:'بستنی',buy:15000,sell:30000,stock:20},
+      {id:uid(),name:'قلیان (میوه)',buy:0,sell:80000,stock:999},
+    ];
+  }
+  function defaultState(){
+    return {
+      version:1, devices:defaultDevices(), tariffs:defaultTariffs(), buffet:defaultBuffet(),
+      sessions:{}, transactions:[], expenses:[],
+      settings:{minMinutes:15,roundTo:5000,warnSecs:30,clubName:'کلاب انرژی گیم‌نت',ownerName:''},
+      admin:{pass:'1234', loggedIn:false},
+      payCards:[{id:uid(),title:'بانک پیش‌فرض',card:'0000-0000-0000-0000',holder:'نام صاحب کارت',bank:''}],
+      payLogs:[],
+      quickSale:[], shiftClosed:[], seq:1000,
+    };
+  }
+  function load(){
+    try{
+      const raw=localStorage.getItem(LS_KEY);
+      if(!raw) return defaultState();
+      const s=JSON.parse(raw), def=defaultState();
+      return {
+        ...def,...s,
+        settings:{...def.settings,...(s.settings||{})},
+        admin:{...def.admin,...(s.admin||{})},
+        payCards:Array.isArray(s.payCards)?s.payCards:def.payCards,
+        payLogs:Array.isArray(s.payLogs)?s.payLogs:def.payLogs,
+        tariffs:{...def.tariffs,...(s.tariffs||{})},
+        devices:Array.isArray(s.devices)&&s.devices.length?s.devices:def.devices,
+        buffet:Array.isArray(s.buffet)?s.buffet:def.buffet,
+        sessions:s.sessions||{}, transactions:s.transactions||[], expenses:s.expenses||[],
+        quickSale:s.quickSale||[], shiftClosed:s.shiftClosed||[],
+      };
+    }catch(e){ console.error(e); return defaultState(); }
+  }
+  let state=load();
+  function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ toast('خطا در ذخیره‌سازی','err'); } }
+
+  /* Pricing */
+  function hourlyRate(device, players){
+    const t=state.tariffs[device.type]||[50000,80000,100000,120000];
+    return t[Math.min(4,Math.max(1,players|0))-1];
+  }
+  function sessionElapsed(sess, now=Date.now()){
+    const end=sess.pausedAt||now;
+    return Math.max(0, end-sess.startTs-(sess.pausedTotal||0));
+  }
+  function sessionRemaining(sess, now=Date.now()){
+    if(sess.mode!=='fixed'||!sess.fixedMinutes) return null;
+    return sess.fixedMinutes*60000 - sessionElapsed(sess,now);
+  }
+  function sessionGameCost(sess, now=Date.now()){
+    const device=state.devices.find(d=>d.id===sess.deviceId);
+    if(!device) return 0;
+    const rate=hourlyRate(device, sess.players);
+    const billable=Math.max(sessionElapsed(sess,now), (state.settings.minMinutes||0)*60000);
+    return Math.round(rate*(billable/3600000));
+  }
+  function sessionBuffetTotal(sess){ return (sess.buffet||[]).reduce((s,i)=>s+i.sell*i.qty,0); }
+
+  /* Sessions */
+  function startSession(deviceId, {players=1, mode='open', fixedMinutes=60}={}){
+    if(state.sessions[deviceId]){ toast('این دستگاه مشغول است','err'); return; }
+    state.sessions[deviceId]={
+      id:uid(), deviceId, players:Math.min(4,Math.max(1,players)), mode,
+      fixedMinutes: mode==='fixed'?fixedMinutes:null,
+      startTs:Date.now(), pausedAt:null, pausedTotal:0, buffet:[], note:'', warned:false, endedFlag:false,
+    };
+    save(); renderDevices(); updateKpis(); toast('جلسه شروع شد ✅');
+  }
+  function pauseSession(deviceId){
+    const s=state.sessions[deviceId]; if(!s||s.pausedAt) return;
+    s.pausedAt=Date.now(); save(); renderDevices(); toast('توقف موقت ⏸');
+  }
+  function resumeSession(deviceId){
+    const s=state.sessions[deviceId]; if(!s||!s.pausedAt) return;
+    s.pausedTotal+=Date.now()-s.pausedAt; s.pausedAt=null; save(); renderDevices(); toast('ادامه ▶');
+  }
+  function moveSession(fromId,toId){
+    const s=state.sessions[fromId]; if(!s) return;
+    if(state.sessions[toId]){ toast('مقصد مشغول است','err'); return; }
+    state.sessions[toId]={...s, deviceId:toId}; delete state.sessions[fromId];
+    save(); renderDevices(); updateKpis(); toast('منتقل شد ↪');
+  }
+  function removeSessionForce(deviceId){
+    if(!confirm('جلسه بدون تسویه حذف شود؟')) return;
+    delete state.sessions[deviceId]; save(); renderDevices(); updateKpis(); toast('حذف شد','warn');
+  }
+  function addBuffetToSession(deviceId, itemId, qty=1){
+    const s=state.sessions[deviceId], item=state.buffet.find(b=>b.id===itemId);
+    if(!s||!item) return;
+    if(item.stock<qty && item.stock!==999){ toast('موجودی کافی نیست','err'); return; }
+    const line=(s.buffet||[]).find(x=>x.id===itemId);
+    if(line) line.qty+=qty; else s.buffet.push({id:item.id,name:item.name,sell:item.sell,qty});
+    if(item.stock!==999) item.stock=Math.max(0,item.stock-qty);
+    save(); renderDevices(); renderBuffet(); toast('«'+item.name+'» اضافه شد');
+  }
+
+  /* Checkout */
+  const PAY_LABEL={pos:'کارت‌خوان (POS)',cash:'وجه نقد',transfer:'کارت به کارت'};
+  function openCheckout(deviceId){
+    const s=state.sessions[deviceId]; if(!s) return;
+    const device=state.devices.find(d=>d.id===deviceId);
+    const now=Date.now(), rate=hourlyRate(device,s.players);
+    const elapsed=sessionElapsed(s,now), gameCost=sessionGameCost(s,now), buffetTotal=sessionBuffetTotal(s);
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-md fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white text-base"><i class="fa-solid fa-cash-register text-emerald-400 ml-2"></i> تسویه حساب</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="rounded-xl bg-black/40 border border-white/10 p-3 mb-3 text-xs space-y-1.5">
+          <div class="flex justify-between"><span class="text-slate-400">دستگاه</span><span class="font-bold text-white">${esc(device.name)} #${toFa(device.number)}</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">مدت بازی</span><span class="font-bold text-emerald-300 num">${fmtDurationLong(elapsed)} (${fmtDuration(elapsed)})</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">تعداد بازیکن</span><span class="font-bold text-white">${toFa(s.players)} نفره</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">نرخ ساعتی</span><span class="font-bold text-violet-300 num">${money(rate)}</span></div>
+          ${state.settings.minMinutes?`<div class="flex justify-between"><span class="text-slate-400">حداقل هزینه</span><span class="text-slate-500 num">${toFa(state.settings.minMinutes)} دقیقه</span></div>`:''}
+          <div class="flex justify-between border-t border-white/10 pt-1.5"><span class="text-slate-400">بازی</span><span class="font-bold text-white num">${money(gameCost)}</span></div>
+          ${(s.buffet||[]).length?`
+            <div class="border-t border-white/10 pt-1.5"><div class="text-slate-400 mb-1">بوفه:</div>
+            ${(s.buffet||[]).map(i=>`<div class="flex justify-between pr-2"><span class="text-slate-300">${esc(i.name)} ×${toFa(i.qty)}</span><span class="num">${money(i.sell*i.qty)}</span></div>`).join('')}
+            </div>
+            <div class="flex justify-between"><span class="text-slate-400">جمع بوفه</span><span class="font-bold text-amber-300 num">${money(buffetTotal)}</span></div>`:''}
+        </div>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div><label class="text-[11px] text-slate-400 font-bold">تخفیف (تومان)</label>
+            <input id="co-discount" type="number" min="0" class="field mt-1" value="0" oninput="App.checkoutRecalc('${deviceId}')"></div>
+          <div><label class="text-[11px] text-slate-400 font-bold">رند مبلغ</label>
+            <select id="co-round" class="field mt-1" onchange="App.checkoutRecalc('${deviceId}')">
+              <option value="0">بدون رند</option>
+              <option value="1000" ${state.settings.roundTo==1000?'selected':''}>۱,۰۰۰</option>
+              <option value="5000" ${state.settings.roundTo==5000?'selected':''}>۵,۰۰۰</option>
+            </select></div>
+        </div>
+        <label class="text-[11px] text-slate-400 font-bold">روش پرداخت</label>
+        <div class="grid grid-cols-3 gap-2 mt-1 mb-3">
+          <label class="cursor-pointer"><input type="radio" name="pay" value="pos" class="hidden peer" checked>
+            <div class="btn btn-ghost w-full peer-checked:!bg-sky-500/25 peer-checked:!border-sky-400/60 peer-checked:text-sky-300 !text-xs"><i class="fa-solid fa-credit-card"></i> کارت‌خوان</div></label>
+          <label class="cursor-pointer"><input type="radio" name="pay" value="cash" class="hidden peer">
+            <div class="btn btn-ghost w-full peer-checked:!bg-emerald-500/25 peer-checked:!border-emerald-400/60 peer-checked:text-emerald-300 !text-xs"><i class="fa-solid fa-money-bill-wave"></i> نقد</div></label>
+          <label class="cursor-pointer"><input type="radio" name="pay" value="transfer" class="hidden peer">
+            <div class="btn btn-ghost w-full peer-checked:!bg-violet-500/25 peer-checked:!border-violet-400/60 peer-checked:text-violet-300 !text-xs"><i class="fa-solid fa-building-columns"></i> کارت‌به‌کارت</div></label>
+        </div>
+        <div class="rounded-xl bg-gradient-to-l from-emerald-500/15 to-violet-500/10 border border-emerald-500/30 p-3 mb-3 flex justify-between items-center">
+          <span class="text-xs text-slate-300 font-bold">مبلغ قابل پرداخت</span>
+          <span id="co-total" class="text-lg font-black text-emerald-300 num">${money(gameCost+buffetTotal)}</span>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost flex-1" onclick="App.closeModal()">انصراف</button>
+          <button class="btn btn-blue" onclick="App.checkoutPrint('${deviceId}')"><i class="fa-solid fa-print"></i> پرینت</button>
+          <button class="btn btn-neon flex-1" onclick="App.checkoutFinish('${deviceId}')"><i class="fa-solid fa-check"></i> تأیید و تسویه</button>
+        </div>
+      </div>`);
+  }
+  function checkoutRecalc(deviceId){
+    const s=state.sessions[deviceId]; if(!s) return;
+    const discount=Number(document.getElementById('co-discount')?.value||0);
+    const roundTo=Number(document.getElementById('co-round')?.value||0);
+    let total=Math.max(0, sessionGameCost(s)+sessionBuffetTotal(s)-discount);
+    if(roundTo>0) total=Math.ceil(total/roundTo)*roundTo;
+    const el=document.getElementById('co-total'); if(el) el.textContent=money(total);
+  }
+  function checkoutFinish(deviceId){
+    const s=state.sessions[deviceId]; if(!s) return;
+    const device=state.devices.find(d=>d.id===deviceId);
+    const discount=Number(document.getElementById('co-discount')?.value||0);
+    const roundTo=Number(document.getElementById('co-round')?.value||0);
+    const pay=document.querySelector('input[name="pay"]:checked')?.value||'pos';
+    const now=Date.now(), elapsed=sessionElapsed(s,now), gameCost=sessionGameCost(s,now), buffetCost=sessionBuffetTotal(s);
+    let buffetBuy=0; (s.buffet||[]).forEach(l=>{ const it=state.buffet.find(x=>x.id===l.id); buffetBuy+=(it?it.buy:0)*l.qty; });
+    let total=Math.max(0, gameCost+buffetCost-discount);
+    if(roundTo>0) total=Math.ceil(total/roundTo)*roundTo;
+    const tx={
+      id:uid(), invoice:++state.seq, type:'session', ts:now, deviceId,
+      deviceLabel:device?device.name+' #'+toFa(device.number):'—',
+      players:s.players, mode:s.mode, elapsedMs:elapsed,
+      rate:hourlyRate(device||{type:'ps5'},s.players),
+      game:gameCost, buffet:buffetCost, buffetBuy,
+      lines:(s.buffet||[]).map(l=>({...l})), discount, total, pay, roundTo, note:s.note||'',
+    };
+    state.transactions.push(tx); delete state.sessions[deviceId]; save();
+    closeModal(); renderDevices(); updateKpis(); renderDash(); renderAccounting();
+    toast('تسویه شد — '+money(total)+' ✅');
+    printReceipt(tx);
+  }
+  function checkoutPrint(deviceId){
+    const s=state.sessions[deviceId]; if(!s) return;
+    const device=state.devices.find(d=>d.id===deviceId);
+    const discount=Number(document.getElementById('co-discount')?.value||0);
+    const roundTo=Number(document.getElementById('co-round')?.value||0);
+    const pay=document.querySelector('input[name="pay"]:checked')?.value||'pos';
+    const now=Date.now(), gameCost=sessionGameCost(s,now), buffetCost=sessionBuffetTotal(s);
+    let total=Math.max(0, gameCost+buffetCost-discount);
+    if(roundTo>0) total=Math.ceil(total/roundTo)*roundTo;
+    printReceipt({
+      invoice:state.seq+1, type:'session', ts:now,
+      deviceLabel:device?device.name+' #'+toFa(device.number):'—',
+      players:s.players, elapsedMs:sessionElapsed(s,now),
+      rate:hourlyRate(device||{type:'ps5'},s.players),
+      game:gameCost, buffet:buffetCost, lines:(s.buffet||[]).map(l=>({...l})),
+      discount, total, pay, preview:true,
+    });
+  }
+  function printReceipt(tx){
+    const club=state.settings.clubName||'گیم‌نت', d=new Date(tx.ts);
+    let html=`<div style="text-align:center">
+      <div style="font-size:14px;font-weight:900">${esc(club)}</div>
+      ${state.settings.ownerName?`<div style="font-size:10px">صاحب مغازه: ${esc(state.settings.ownerName)}</div>`:''}
+      <div style="font-size:10px">فاکتور فروش — سیستم مدیریت گیم‌نت</div>
+      ${tx.preview?'<div style="font-size:10px;color:#666">*** پیش‌نمایش ***</div>':''}
+      <hr style="border:none;border-top:1px dashed #000;margin:4px 0">
+      <div style="font-size:10px;text-align:right">
+        شماره: ${toFa(tx.invoice)}<br>تاریخ: ${fmtJDate(d)} — ${fmtTime(tx.ts)}<br>
+        ${tx.type==='session'?`دستگاه: ${esc(tx.deviceLabel)}<br>بازیکن: ${toFa(tx.players)} نفره<br>مدت: ${fmtDuration(tx.elapsedMs)}<br>نرخ ساعتی: ${nf(tx.rate)}<br>`:''}
+      </div><hr style="border:none;border-top:1px dashed #000;margin:4px 0"></div>`;
+    if(tx.type==='session'){
+      html+=`<div style="font-size:11px;text-align:right">هزینه بازی: ${nf(tx.game)}<br>
+      ${(tx.lines||[]).length?'<b>بوفه:</b><br>'+tx.lines.map(l=>esc(l.name)+' ×'+toFa(l.qty)+' = '+nf(l.sell*l.qty)).join('<br>')+'<br>':''}
+      ${tx.discount?'تخفیف: -'+nf(tx.discount)+'<br>':''}</div>`;
+    }else if(tx.lines){
+      html+=`<div style="font-size:11px;text-align:right">`+tx.lines.map(l=>esc(l.name)+' ×'+toFa(l.qty)+' = '+nf(l.sell*l.qty)).join('<br>')+`</div>`;
+    }
+    html+=`<hr style="border:none;border-top:1px dashed #000;margin:4px 0">
+      <div style="text-align:center;font-size:13px;font-weight:900">جمع کل: ${nf(tx.total)} تومان</div>
+      <div style="text-align:center;font-size:10px">پرداخت: ${PAY_LABEL[tx.pay]||tx.pay}</div>
+      <hr style="border:none;border-top:1px dashed #000;margin:4px 0">
+      <div style="text-align:center;font-size:10px;line-height:1.8">با تشکر از حضور شما<br>${esc(club)}</div>
+      <div style="text-align:center;font-size:9px;margin-top:4px">***</div>`;
+    document.getElementById('receipt-print').innerHTML=html;
+    setTimeout(()=>window.print(),50);
+  }
+
+  /* Buffet / quick sale */
+  let qsCart=[], pageQs=[];
+  function openQuickSale(){
+    qsCart=[];
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-lg fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white"><i class="fa-solid fa-bolt text-amber-400 ml-2"></i> فروش سریع بوفه</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3 max-h-64 overflow-auto pl-1">
+          ${state.buffet.map(it=>`
+            <button class="glass rounded-xl p-2.5 text-right hover:border-emerald-500/40 transition" onclick="App.qsAdd('${it.id}')">
+              <div class="text-xs font-bold text-white truncate">${esc(it.name)}</div>
+              <div class="text-[11px] text-emerald-400 font-black num mt-1">${money(it.sell)}</div>
+              <div class="text-[10px] text-slate-500">موجودی: ${it.stock===999?'∞':toFa(it.stock)}</div>
+            </button>`).join('')}
+        </div>
+        <div id="qs-cart" class="rounded-xl bg-black/40 border border-white/10 p-3 mb-3 text-xs min-h-16"><div class="text-slate-500">سبد خرید خالی است</div></div>
+        <label class="text-[11px] text-slate-400 font-bold w-full">روش پرداخت
+          <select id="qs-pay" class="field mt-1"><option value="cash">نقد</option><option value="pos">کارت‌خوان</option><option value="transfer">کارت‌به‌کارت</option></select>
+        </label>
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-ghost flex-1" onclick="App.closeModal()">انصراف</button>
+          <button class="btn btn-neon flex-1" onclick="App.qsFinish()"><i class="fa-solid fa-check"></i> ثبت فروش</button>
+        </div>
+      </div>`);
+  }
+  function qsAdd(itemId){
+    const item=state.buffet.find(b=>b.id===itemId); if(!item) return;
+    if(item.stock<=0&&item.stock!==999){ toast('موجودی تمام است','err'); return; }
+    const line=qsCart.find(x=>x.id===itemId);
+    if(line) line.qty++; else qsCart.push({id:itemId,qty:1});
+    qsCartRender();
+  }
+  function qsCartRender(){
+    const box=document.getElementById('qs-cart'); if(!box) return;
+    if(!qsCart.length){ box.innerHTML='<div class="text-slate-500">سبد خرید خالی است</div>'; return; }
+    let total=0;
+    box.innerHTML=qsCart.map(line=>{
+      const it=state.buffet.find(b=>b.id===line.id); if(!it) return '';
+      total+=it.sell*line.qty;
+      return `<div class="flex items-center justify-between py-1 border-b border-white/5">
+        <span class="text-slate-200">${esc(it.name)}</span>
+        <span class="flex items-center gap-2">
+          <button class="btn btn-ghost !p-1 !text-[10px]" onclick="App.qsQty('${it.id}',-1)">−</button>
+          <span class="num w-6 text-center">${toFa(line.qty)}</span>
+          <button class="btn btn-ghost !p-1 !text-[10px]" onclick="App.qsQty('${it.id}',1)">+</button>
+          <span class="num text-amber-300 w-24 text-left">${money(it.sell*line.qty)}</span>
+        </span></div>`;
+    }).join('')+`<div class="flex justify-between pt-2 font-black text-emerald-300"><span>جمع</span><span class="num">${money(total)}</span></div>`;
+  }
+  function qsQty(id,delta){
+    const line=qsCart.find(x=>x.id===id); if(!line) return;
+    line.qty+=delta; if(line.qty<=0) qsCart=qsCart.filter(x=>x.id!==id);
+    qsCartRender();
+  }
+  function qsFinish(){
+    if(!qsCart.length){ toast('سبد خالی است','err'); return; }
+    const pay=document.getElementById('qs-pay')?.value||'cash';
+    const lines=[]; let total=0, buySum=0;
+    qsCart.forEach(line=>{
+      const it=state.buffet.find(b=>b.id===line.id); if(!it) return;
+      if(it.stock!==999){ if(it.stock<line.qty){ toast('موجودی «'+it.name+'» کافی نیست','err'); return; } it.stock-=line.qty; }
+      lines.push({id:it.id,name:it.name,sell:it.sell,qty:line.qty});
+      total+=it.sell*line.qty; buySum+=it.buy*line.qty;
+    });
+    const tx={id:uid(),invoice:++state.seq,type:'buffet',ts:Date.now(),lines,game:0,buffet:total,buffetBuy:buySum,discount:0,total,pay};
+    state.transactions.push(tx); qsCart=[]; save(); closeModal();
+    renderBuffet(); updateKpis(); renderDash(); renderAccounting();
+    toast('فروش بوفه ثبت شد — '+money(total));
+    printReceipt(tx);
+  }
+  function openMenuItem(editId){
+    const item=editId?state.buffet.find(b=>b.id===editId):null;
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-sm fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white text-sm">${item?'ویرایش قلم':'قلم جدید منو'}</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="text-[11px] text-slate-400 font-bold">نام</label>
+        <input id="mi-name" class="field mt-1 mb-2" value="${item?esc(item.name):''}" placeholder="مثلاً نوشابه کوکا">
+        <div class="grid grid-cols-3 gap-2">
+          <div><label class="text-[11px] text-slate-400 font-bold">خرید</label><input id="mi-buy" type="number" min="0" class="field mt-1" value="${item?item.buy:0}"></div>
+          <div><label class="text-[11px] text-slate-400 font-bold">فروش</label><input id="mi-sell" type="number" min="0" class="field mt-1" value="${item?item.sell:0}"></div>
+          <div><label class="text-[11px] text-slate-400 font-bold">موجودی</label><input id="mi-stock" type="number" min="0" class="field mt-1" value="${item?item.stock:0}"></div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button class="btn btn-ghost flex-1" onclick="App.closeModal()">انصراف</button>
+          ${item?`<button class="btn btn-rose" onclick="App.deleteBuffetItem('${item.id}')"><i class="fa-solid fa-trash"></i></button>`:''}
+          <button class="btn btn-neon flex-1" onclick="App.saveBuffetItem('${editId||''}')"><i class="fa-solid fa-floppy-disk"></i> ذخیره</button>
+        </div>
+      </div>`);
+  }
+  function saveBuffetItem(editId){
+    const name=document.getElementById('mi-name').value.trim();
+    const buy=Number(document.getElementById('mi-buy').value||0);
+    const sell=Number(document.getElementById('mi-sell').value||0);
+    const stock=Number(document.getElementById('mi-stock').value||0);
+    if(!name){ toast('نام قلم را وارد کنید','err'); return; }
+    if(editId){ const it=state.buffet.find(b=>b.id===editId); if(it) Object.assign(it,{name,buy,sell,stock}); }
+    else state.buffet.push({id:uid(),name,buy,sell,stock});
+    save(); closeModal(); renderBuffet(); renderSettings(); toast('ذخیره شد ✅');
+  }
+  function deleteBuffetItem(id){
+    if(!confirm('حذف این قلم از منو؟')) return;
+    state.buffet=state.buffet.filter(b=>b.id!==id); save(); closeModal(); renderBuffet(); toast('حذف شد','warn');
+  }
+
+  /* Expenses */
+  function openExpense(){
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-sm fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white text-sm"><i class="fa-solid fa-money-bill-transfer text-amber-400 ml-2"></i> ثبت هزینه</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="text-[11px] text-slate-400 font-bold">شرح هزینه</label>
+        <input id="ex-title" class="field mt-1 mb-2" placeholder="مثلاً تعمیر دسته / خرید بوفه">
+        <label class="text-[11px] text-slate-400 font-bold">مبلغ (تومان)</label>
+        <input id="ex-amount" type="number" min="0" class="field mt-1" placeholder="0">
+        <div class="flex gap-2 mt-4">
+          <button class="btn btn-ghost flex-1" onclick="App.closeModal()">انصراف</button>
+          <button class="btn btn-amber flex-1" onclick="App.saveExpense()"><i class="fa-solid fa-check"></i> ثبت</button>
+        </div>
+      </div>`);
+  }
+  function saveExpense(){
+    const title=document.getElementById('ex-title').value.trim();
+    const amount=Number(document.getElementById('ex-amount').value||0);
+    if(!title||amount<=0){ toast('اطلاعات هزینه ناقص است','err'); return; }
+    state.expenses.push({id:uid(),ts:Date.now(),title,amount});
+    save(); closeModal(); renderAccounting(); updateKpis(); toast('هزینه ثبت شد ✅');
+  }
+  function deleteExpense(id){
+    if(!confirm('حذف این هزینه؟')) return;
+    state.expenses=state.expenses.filter(e=>e.id!==id); save(); renderAccounting();
+  }
+
+  /* Stats / shift */
+  function todayStats(){
+    const dayStart=new Date(); dayStart.setHours(0,0,0,0); const start=dayStart.getTime();
+    const txs=state.transactions.filter(t=>t.ts>=start);
+    const exps=state.expenses.filter(e=>e.ts>=start);
+    let total=0,game=0,buffet=0,cash=0,pos=0,transfer=0,discount=0,buffetBuy=0;
+    txs.forEach(t=>{
+      total+=t.total||0; game+=t.game||0; buffet+=t.buffet||0; discount+=t.discount||0; buffetBuy+=t.buffetBuy||0;
+      if(t.pay==='cash') cash+=t.total||0; else if(t.pay==='pos') pos+=t.total||0; else transfer+=t.total||0;
+    });
+    const expense=exps.reduce((s,e)=>s+e.amount,0);
+    return {txs,exps,total,game,buffet,cash,pos,transfer,discount,expense,buffetBuy,net:total-buffetBuy-expense,tk:todayKey()};
+  }
+  function closeShift(){
+    const st=todayStats();
+    if(!st.total&&!st.expense){ toast('امروز تراکنشی ثبت نشده','warn'); return; }
+    if(!confirm('تخلیه و بستن دخل امروز؟\nمجموع: '+money(st.total))) return;
+    state.shiftClosed.push({id:uid(),date:st.tk,ts:Date.now(),total:st.total,game:st.game,buffet:st.buffet,cash:st.cash,pos:st.pos,transfer:st.transfer,expense:st.expense,net:st.net,count:st.txs.length});
+    save(); renderAccounting(); toast('صندوق بسته شد 🔒');
+    document.getElementById('receipt-print').innerHTML=`<div style="text-align:center">
+      <div style="font-size:14px;font-weight:900">${esc(state.settings.clubName)}</div>
+      <div style="font-size:11px">گزارش پایان شیفت</div>
+      <hr style="border:none;border-top:1px dashed #000;margin:4px 0">
+      <div style="font-size:11px;text-align:right;line-height:1.9">
+        تاریخ: ${fmtJDate(new Date())}<br>تعداد تراکنش: ${toFa(st.count)}<br>─────────────<br>
+        سهم کنسول: ${nf(st.game)}<br>سهم بوفه: ${nf(st.buffet)}<br>تخفیف‌ها: ${nf(st.discount)}<br>
+        <b>مجموع درآمد: ${nf(st.total)}</b><br>─────────────<br>
+        نقد: ${nf(st.cash)}<br>کارت‌خوان: ${nf(st.pos)}<br>کارت‌به‌کارت: ${nf(st.transfer)}<br>
+        هزینه‌ها: ${nf(st.expense)}<br>بهای بوفه: ${nf(st.buffetBuy)}<br><b>سود خالص: ${nf(st.net)}</b>
+      </div><hr style="border:none;border-top:1px dashed #000;margin:4px 0">
+      <div style="text-align:center;font-size:10px">چاپ شیفت ${fmtTime(Date.now())}</div></div>`;
+    setTimeout(()=>window.print(),80);
+  }
+
+  /* Backup */
+  function exportBackup(){
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='gamenet-backup-'+todayKey()+'.json'; a.click(); URL.revokeObjectURL(a.href);
+    toast('فایل بک‌آپ دانلود شد ⬇');
+  }
+  function importBackup(input){
+    const file=input.files&&input.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const data=JSON.parse(reader.result);
+        if(!data||!data.devices) throw new Error('bad');
+        if(!confirm('تمام داده‌های فعلی با فایل جایگزین شود؟')) return;
+        state={...defaultState(),...data}; save(); renderAll(); toast('بک‌آپ بازیابی شد ✅');
+      }catch(e){ toast('فایل JSON معتبر نیست','err'); }
+      input.value='';
+    };
+    reader.readAsText(file);
+  }
+  function resetDaily(){
+    if(!confirm('آمار امروز پاک شود؟ تایمرهای فعال می‌مانند.')) return;
+    if(prompt('رمز تأیید (پیش‌فرض: 1234):')!=='1234'){ toast('رمز اشتباه','err'); return; }
+    const dayStart=new Date(); dayStart.setHours(0,0,0,0); const start=dayStart.getTime();
+    state.transactions=state.transactions.filter(t=>t.ts<start);
+    state.expenses=state.expenses.filter(e=>e.ts<start);
+    save(); renderAll(); toast('آمار روزانه پاک شد','warn');
+  }
+  function hardReset(){
+    if(!confirm('⚠️ ریست کامل سیستم؟')) return;
+    if(prompt('رمز تأیید (پیش‌فرض: 1234):')!=='1234'){ toast('رمز اشتباه','err'); return; }
+    state=defaultState(); save(); renderAll(); toast('سیستم ریست شد','warn');
+  }
+
+  /* Tariffs / settings */
+  function renderTariffs(){
+    const body=document.getElementById('tariff-body'); if(!body) return;
+    body.innerHTML=DEVICE_TYPES.map(t=>{
+      const r=state.tariffs[t.key]||[0,0,0,0];
+      return `<tr><td class="font-bold text-white">${t.label}</td>`+
+        [0,1,2,3].map(i=>`<td><input class="field !py-1 !text-xs num" type="number" min="0" step="1000" data-type="${t.key}" data-idx="${i}" value="${r[i]}"></td>`).join('')+`</tr>`;
+    }).join('');
+  }
+  function saveTariffs(){
+    document.querySelectorAll('#tariff-body input').forEach(inp=>{
+      const ty=inp.dataset.type, idx=+inp.dataset.idx;
+      if(!state.tariffs[ty]) state.tariffs[ty]=[0,0,0,0];
+      state.tariffs[ty][idx]=Number(inp.value||0);
+    });
+    save(); renderDevices(); renderDash(); toast('تعرفه‌ها ذخیره شد ✅');
+  }
+  function renderSettings(){
+    document.getElementById('set-min-minutes').value=state.settings.minMinutes;
+    document.getElementById('set-round').value=String(state.settings.roundTo);
+    document.getElementById('set-warn-secs').value=state.settings.warnSecs;
+    document.getElementById('set-club-name').value=state.settings.clubName;
+    renderTariffs(); renderDeviceManage();
+  }
+  function saveSettings(){
+    state.settings.minMinutes=Math.max(0,Number(document.getElementById('set-min-minutes').value||0));
+    state.settings.roundTo=Number(document.getElementById('set-round').value||0);
+    state.settings.warnSecs=Math.max(0,Number(document.getElementById('set-warn-secs').value||0));
+    state.settings.clubName=document.getElementById('set-club-name').value.trim()||'گیم‌نت';
+    save(); toast('تنظیمات ذخیره شد ✅');
+  }
+
+  /* Device manager */
+  function openDeviceManager(){
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-md fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white text-sm"><i class="fa-solid fa-plus text-emerald-400 ml-2"></i> افزودن دستگاه</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="text-[11px] text-slate-400 font-bold">نوع دستگاه</label>
+        <select id="nd-type" class="field mt-1 mb-2">${DEVICE_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')}</select>
+        <label class="text-[11px] text-slate-400 font-bold">نام</label>
+        <input id="nd-name" class="field mt-1 mb-2" placeholder="مثلاً PS5 یا میز ۳">
+        <label class="text-[11px] text-slate-400 font-bold">شماره</label>
+        <input id="nd-num" type="number" min="1" class="field mt-1" value="1">
+        <div class="flex gap-2 mt-4">
+          <button class="btn btn-ghost flex-1" onclick="App.closeModal()">انصراف</button>
+          <button class="btn btn-neon flex-1" onclick="App.addDevice()"><i class="fa-solid fa-plus"></i> افزودن</button>
+        </div>
+      </div>`);
+  }
+  function addDevice(){
+    const type=document.getElementById('nd-type').value;
+    const name=document.getElementById('nd-name').value.trim()||(DEVICE_TYPES.find(t=>t.key===type)||{}).label;
+    const num=Number(document.getElementById('nd-num').value||1);
+    state.devices.push({id:uid(),type,name,number:num,enabled:true});
+    save(); closeModal(); renderDevices(); renderDeviceManage(); updateKpis(); toast('دستگاه افزوده شد ✅');
+  }
+  function renderDeviceManage(){
+    const box=document.getElementById('device-manage-list'); if(!box) return;
+    box.innerHTML=state.devices.map(d=>{
+      const busy=!!state.sessions[d.id];
+      return `<div class="flex items-center justify-between rounded-xl bg-black/30 border border-white/5 px-3 py-2 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="${busy?'text-rose-400':'text-emerald-400'}"><i class="fa-solid fa-circle text-[8px]"></i></span>
+          <span class="font-bold text-white">${esc(d.name)} #${toFa(d.number)}</span>
+          <span class="text-slate-500">${(DEVICE_TYPES.find(t=>t.key===d.type)||{}).label||d.type}</span>
+        </div>
+        <div>${busy?'<span class="chip bg-rose-500/20 text-rose-300">مشغول</span>':`<button class="btn btn-ghost !p-1.5 !text-[10px]" onclick="App.removeDevice('${d.id}')"><i class="fa-solid fa-trash"></i></button>`}</div>
+      </div>`;
+    }).join('');
+  }
+  function removeDevice(id){
+    if(state.sessions[id]){ toast('ابتدا تسویه جلسه','err'); return; }
+    if(!confirm('حذف این دستگاه؟')) return;
+    state.devices=state.devices.filter(d=>d.id!==id); save(); renderDevices(); renderDeviceManage(); updateKpis(); toast('حذف شد','warn');
+  }
+
+  /* Device cards */
+  function statusOf(deviceId){
+    const s=state.sessions[deviceId];
+    if(!s) return 'free';
+    if(s.pausedAt) return 'pause';
+    if(s.mode==='fixed'){
+      const rem=sessionRemaining(s);
+      if(rem!==null&&rem<=0) return 'end';
+      if(rem!==null&&rem<=(state.settings.warnSecs||30)*1000) return 'warn';
+    }
+    return 'busy';
+  }
+  function renderDevices(){
+    const grid=document.getElementById('devices-grid'); if(!grid) return;
+    grid.innerHTML=state.devices.filter(d=>d.enabled!==false).map(d=>{
+      const s=state.sessions[d.id], st=statusOf(d.id), rate=hourlyRate(d,s?s.players:1);
+      const statusChip={
+        free:'<span class="chip bg-emerald-500/15 text-emerald-300 border border-emerald-500/40"><i class="fa-solid fa-circle text-[7px]"></i> آزاد</span>',
+        busy:'<span class="chip bg-rose-500/15 text-rose-300 border border-rose-500/40"><i class="fa-solid fa-circle text-[7px] dot-live"></i> مشغول</span>',
+        pause:'<span class="chip bg-amber-500/15 text-amber-300 border border-amber-500/40"><i class="fa-solid fa-pause text-[8px]"></i> مکث</span>',
+        warn:'<span class="chip bg-amber-500/25 text-amber-200 border border-amber-400/60"><i class="fa-solid fa-hourglass-half text-[8px]"></i> نزدیک پایان</span>',
+        end:'<span class="chip bg-rose-500/30 text-rose-100 border border-rose-400"><i class="fa-solid fa-bell text-[8px]"></i> پایان تایم!</span>',
+      }[st];
+      const cls=st==='free'?'status-free':st==='pause'?'status-pause':(st==='warn'||st==='end')?'status-busy status-warn':'status-busy';
+      if(!s){
+        return `<div class="glass rounded-2xl p-4 ${cls} fade-in">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <div class="font-extrabold text-white text-sm">${esc(d.name)} <span class="text-slate-500">#${toFa(d.number)}</span></div>
+              <div class="text-[10px] text-slate-500 mt-0.5">${(DEVICE_TYPES.find(t=>t.key===d.type)||{}).label||''} · از ${money(hourlyRate(d,1))}/ساعت</div>
+            </div>${statusChip}
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button class="btn btn-neon !text-xs" onclick="App.openStart('${d.id}')"><i class="fa-solid fa-play"></i> شروع بازی</button>
+            <button class="btn btn-amber !text-xs" onclick="App.openStart('${d.id}','fixed')"><i class="fa-solid fa-hourglass-half"></i> تایم محدود</button>
+          </div></div>`;
+      }
+      const elapsed=sessionElapsed(s), cost=sessionGameCost(s), rem=sessionRemaining(s), buffetSum=sessionBuffetTotal(s), alarm=st==='end';
+      return `<div class="glass rounded-2xl p-4 ${cls} ${alarm?'alarm-flash':''} fade-in">
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <div class="font-extrabold text-white text-sm">${esc(d.name)} <span class="text-slate-500">#${toFa(d.number)}</span></div>
+            <div class="text-[10px] text-slate-500 mt-0.5">${toFa(s.players)} بازیکن · ${s.mode==='open'?'تایم آزاد':'تایم محدود '+toFa(s.fixedMinutes)+'′'} · ${money(rate)}/س</div>
+          </div>${statusChip}
+        </div>
+        <div class="rounded-xl bg-black/40 border border-white/10 p-2.5 mb-2 text-center">
+          ${s.mode==='fixed'&&rem!==null?`
+            <div class="text-[10px] text-slate-400 mb-0.5">زمان باقی‌مانده</div>
+            <div class="text-2xl font-black num ${rem<=0?'text-rose-400':rem<=(state.settings.warnSecs||30)*1000?'text-amber-300':'text-sky-300'}" data-rem="${d.id}">${fmtDuration(rem)}</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">سپری‌شده: <span class="num" data-el="${d.id}">${fmtDuration(elapsed)}</span></div>
+          `:`
+            <div class="text-[10px] text-slate-400 mb-0.5">زمان سپری‌شده</div>
+            <div class="text-2xl font-black text-emerald-300 num" data-el="${d.id}">${fmtDuration(elapsed)}</div>`}
+          <div class="text-sm font-black text-white num mt-1" data-cost="${d.id}">${money(cost+buffetSum)}</div>
+          ${(s.buffet||[]).length?`<div class="text-[10px] text-amber-400 mt-0.5">بوفه: ${money(buffetSum)} (${toFa(s.buffet.reduce((x,i)=>x+i.qty,0))} قلم)</div>`:''}
+        </div>
+        <div class="grid grid-cols-4 gap-1.5 mb-1.5">
+          ${s.pausedAt?`<button class="btn btn-neon !text-[10px] !py-1.5" onclick="App.resumeSession('${d.id}')"><i class="fa-solid fa-play"></i></button>`
+            :`<button class="btn btn-ghost !text-[10px] !py-1.5" onclick="App.pauseSession('${d.id}')"><i class="fa-solid fa-pause"></i></button>`}
+          <button class="btn btn-blue !text-[10px] !py-1.5" onclick="App.openBuffetPicker('${d.id}')"><i class="fa-solid fa-burger"></i></button>
+          <button class="btn btn-purple !text-[10px] !py-1.5" onclick="App.openMove('${d.id}')"><i class="fa-solid fa-right-left"></i></button>
+          <button class="btn btn-rose !text-[10px] !py-1.5" onclick="App.openCheckout('${d.id}')"><i class="fa-solid fa-cash-register"></i></button>
+        </div>
+        <div class="flex gap-1.5">
+          <button class="btn btn-ghost flex-1 !text-[10px] !py-1" onclick="App.changePlayers('${d.id}')"><i class="fa-solid fa-user-group"></i> ${toFa(s.players)} نفره</button>
+          <button class="btn btn-ghost !text-[10px] !py-1" onclick="App.removeSessionForce('${d.id}')"><i class="fa-solid fa-xmark"></i></button>
+        </div></div>`;
+    }).join('')||`<div class="col-span-full glass rounded-2xl p-8 text-center text-slate-500 text-sm">دستگاهی ثبت نشده</div>`;
+  }
+  function openStart(deviceId, mode='open'){
+    const d=state.devices.find(x=>x.id===deviceId);
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-sm fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white text-sm"><i class="fa-solid fa-play text-emerald-400 ml-2"></i> شروع بازی — ${esc(d.name)} #${toFa(d.number)}</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="text-[11px] text-slate-400 font-bold">تعداد بازیکن / دسته</label>
+        <div class="grid grid-cols-4 gap-2 mt-1 mb-3">
+          ${[1,2,3,4].map(p=>`<label class="cursor-pointer">
+            <input type="radio" name="sp" value="${p}" class="hidden peer" ${p===1?'checked':''}>
+            <div class="btn btn-ghost w-full !text-xs peer-checked:!bg-emerald-500/25 peer-checked:!border-emerald-400/60 peer-checked:text-emerald-300">${toFa(p)} نفر</div>
+          </label>`).join('')}
+        </div>
+        <div class="rounded-xl bg-black/40 border border-white/10 p-3 mb-3 text-xs">
+          <div class="flex justify-between"><span class="text-slate-400">حالت</span><span class="font-bold text-white">${mode==='open'?'تایم آزاد ⏱':'تایم محدود ⏳'}</span></div>
+          <div class="flex justify-between mt-1"><span class="text-slate-400">نرخ پایه (۱نفره)</span><span class="num text-emerald-300">${money(hourlyRate(d,1))}</span></div>
+        </div>
+        ${mode==='fixed'?`
+          <label class="text-[11px] text-slate-400 font-bold">مدت (دقیقه)</label>
+          <div class="grid grid-cols-5 gap-1.5 mt-1 mb-2">
+            ${[30,60,90,120,180].map(m=>`<button class="btn btn-ghost !text-[10px] !py-1.5" onclick="document.getElementById('fx-min').value='${m}'">${toFa(m)}′</button>`).join('')}
+          </div>
+          <input id="fx-min" type="number" min="1" class="field mb-3" value="60">`:''}
+        <div class="flex gap-2">
+          <button class="btn btn-ghost flex-1" onclick="App.closeModal()">انصراف</button>
+          <button class="btn btn-neon flex-1" onclick="App.confirmStart('${deviceId}','${mode}')"><i class="fa-solid fa-check"></i> شروع</button>
+        </div>
+      </div>`);
+  }
+  function confirmStart(deviceId, mode){
+    const players=Number(document.querySelector('input[name="sp"]:checked')?.value||1);
+    let fixedMinutes=60;
+    if(mode==='fixed'){
+      fixedMinutes=Number(document.getElementById('fx-min')?.value||60);
+      if(fixedMinutes<1){ toast('مدت نامعتبر','err'); return; }
+    }
+    startSession(deviceId,{players,mode,fixedMinutes}); closeModal(); switchView('devices');
+  }
+  function changePlayers(deviceId){
+    const s=state.sessions[deviceId]; if(!s) return;
+    const next=s.players>=4?1:s.players+1;
+    if(!confirm('تعداد بازیکن به '+next+' نفره تغییر کند؟')) return;
+    s.players=next; save(); renderDevices();
+    toast('نرخ جدید: '+money(hourlyRate(state.devices.find(d=>d.id===deviceId),next))+'/ساعت');
+  }
+  function openMove(fromId){
+    const targets=state.devices.filter(d=>d.id!==fromId&&!state.sessions[d.id]&&d.enabled!==false);
+    if(!targets.length){ toast('دستگاه آزادی نیست','err'); return; }
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-sm fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white text-sm"><i class="fa-solid fa-right-left text-violet-400 ml-2"></i> انتقال جلسه</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="space-y-2 max-h-64 overflow-auto pl-1">
+          ${targets.map(t=>`<button class="w-full glass rounded-xl p-3 text-right hover:border-emerald-500/50 transition" onclick="App.doMove('${fromId}','${t.id}')">
+            <div class="font-bold text-white text-xs">${esc(t.name)} #${toFa(t.number)}</div>
+            <div class="text-[10px] text-slate-500">${money(hourlyRate(t,state.sessions[fromId]?.players||1))}/ساعت · آزاد</div>
+          </button>`).join('')}
+        </div>
+        <button class="btn btn-ghost w-full mt-3" onclick="App.closeModal()">انصراف</button>
+      </div>`);
+  }
+  function doMove(from,to){ closeModal(); moveSession(from,to); }
+  function openBuffetPicker(deviceId){
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-md fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white text-sm"><i class="fa-solid fa-burger text-amber-400 ml-2"></i> افزودن بوفه به میز</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="grid grid-cols-2 gap-2 max-h-72 overflow-auto pl-1">
+          ${state.buffet.map(it=>`<button class="glass rounded-xl p-2.5 text-right hover:border-amber-500/50 transition ${it.stock<=0&&it.stock!==999?'opacity-40':''}"
+            ${it.stock<=0&&it.stock!==999?'disabled':''} onclick="App.pickBuffet('${deviceId}','${it.id}')">
+            <div class="text-xs font-bold text-white truncate">${esc(it.name)}</div>
+            <div class="text-[11px] text-amber-300 font-black num">${money(it.sell)}</div>
+            <div class="text-[10px] text-slate-500">${it.stock===999?'∞':toFa(it.stock)+' عدد'}</div>
+          </button>`).join('')}
+        </div>
+        <button class="btn btn-ghost w-full mt-3" onclick="App.closeModal()">بستن</button>
+      </div>`);
+  }
+  function pickBuffet(deviceId,itemId){ addBuffetToSession(deviceId,itemId,1); closeModal(); openBuffetPicker(deviceId); }
+
+  /* KPIs / charts */
+  function setText(id,txt){ const el=document.getElementById(id); if(el) el.textContent=txt; }
+  function updateKpis(){
+    const st=todayStats(), busy=Object.keys(state.sessions).length, totalDev=state.devices.length;
+    setText('kpi-today',money(st.total)); setText('kpi-game',money(st.game)); setText('kpi-buffet',money(st.buffet));
+    setText('kpi-active',toFa(busy)+' / '+toFa(totalDev));
+    setText('top-free',toFa(totalDev-busy)+' آزاد'); setText('top-busy',toFa(busy)+' مشغول'); setText('badge-busy',toFa(busy));
+    setText('shift-total',money(st.total)); setText('shift-cash',money(st.cash)); setText('shift-pos',money(st.pos));
+    setText('shift-transfer',money(st.transfer)); setText('shift-game',money(st.game)); setText('shift-buffet',money(st.buffet));
+    setText('shift-expense',money(st.expense)); setText('shift-net',money(st.net));
+  }
+  function last7Days(){
+    const days=[];
+    for(let i=6;i>=0;i--){
+      const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
+      const start=d.getTime(), end=start+86400000;
+      const sum=state.transactions.filter(t=>t.ts>=start&&t.ts<end).reduce((s,t)=>s+(t.total||0),0);
+      days.push({label:toFa(d.getDate())+'/'+toFa(d.getMonth()+1),sum});
+    }
+    return days;
+  }
+  let chartWeek=null, chartPay=null;
+  function renderCharts(){
+    const wk=document.getElementById('chart-week');
+    if(wk&&window.Chart){
+      const data=last7Days();
+      if(chartWeek) chartWeek.destroy();
+      chartWeek=new Chart(wk,{type:'bar',data:{labels:data.map(d=>d.label),datasets:[{label:'درآمد',data:data.map(d=>d.sum),backgroundColor:'rgba(16,185,129,.65)',borderColor:'#10b981',borderWidth:1,borderRadius:6}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{x:{ticks:{color:'#94a3b8',font:{family:'Vazirmatn',size:10}},grid:{color:'rgba(148,163,184,.06)'}},
+            y:{ticks:{color:'#94a3b8',font:{family:'Vazirmatn',size:10},callback:v=>nf(v)},grid:{color:'rgba(148,163,184,.06)'}}}}});
+    }
+    const payEl=document.getElementById('chart-pay');
+    if(payEl&&window.Chart){
+      const st=todayStats();
+      if(chartPay) chartPay.destroy();
+      chartPay=new Chart(payEl,{type:'doughnut',data:{labels:['نقد','کارت‌خوان','کارت‌به‌کارت','هزینه'],
+        datasets:[{data:[st.cash,st.pos,st.transfer,st.expense],backgroundColor:['#10b981','#38bdf8','#a78bfa','#fb7185'],borderWidth:0}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#cbd5e1',font:{family:'Vazirmatn',size:11},boxWidth:12}}},cutout:'62%'}});
+    }
+  }
+  function renderDash(){
+    updateKpis();
+    const box=document.getElementById('dash-active-list');
+    if(box){
+      const ids=Object.keys(state.sessions);
+      box.innerHTML=!ids.length?'<div class="text-xs text-slate-500 text-center py-6">دستگاه فعالی نیست — همه آزادند 🟢</div>':
+        ids.map(id=>{
+          const d=state.devices.find(x=>x.id===id), s=state.sessions[id];
+          if(!d||!s) return '';
+          return `<div class="flex items-center justify-between rounded-lg bg-black/30 border border-white/5 px-3 py-2">
+            <div class="text-xs"><span class="font-bold text-white">${esc(d.name)}#${toFa(d.number)}</span>
+            <span class="text-slate-500 mr-1">${fmtDuration(sessionElapsed(s))}</span></div>
+            <span class="num text-emerald-300 text-xs font-black">${money(sessionGameCost(s))}</span></div>`;
+        }).join('');
+    }
+    const tb=document.getElementById('dash-tx-body');
+    if(tb){
+      const rows=[...state.transactions].slice(-6).reverse();
+      tb.innerHTML=rows.length?rows.map(t=>`<tr>
+        <td class="num text-slate-400">${toFa(t.invoice)}</td>
+        <td class="text-slate-400 num">${fmtTime(t.ts)}</td>
+        <td>${t.type==='session'?'<span class="chip bg-violet-500/15 text-violet-300">بازی</span>':'<span class="chip bg-amber-500/15 text-amber-300">بوفه</span>'}</td>
+        <td class="text-slate-400 text-[11px]">${PAY_LABEL[t.pay]||t.pay}</td>
+        <td class="num font-black text-white">${money(t.total)}</td></tr>`).join(''):
+        '<tr><td colspan="5" class="text-center text-slate-500 py-4 text-xs">هنوز تراکنشی ثبت نشده</td></tr>';
+    }
+    renderCharts();
+  }
+  function renderAccounting(){
+    updateKpis();
+    const st=todayStats(), el=document.getElementById('expense-list');
+    if(el){
+      el.innerHTML=st.exps.length?[...st.exps].reverse().map(e=>`
+        <div class="flex items-center justify-between rounded-lg bg-black/30 border border-white/5 px-3 py-2">
+          <div><div class="font-bold text-white text-xs">${esc(e.title)}</div><div class="text-[10px] text-slate-500 num">${fmtTime(e.ts)}</div></div>
+          <div class="flex items-center gap-2">
+            <span class="num text-rose-300 font-black text-xs">${money(e.amount)}</span>
+            <button class="btn btn-ghost !p-1 !text-[10px]" onclick="App.deleteExpense('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+          </div></div>`).join(''):'<div class="text-xs text-slate-500 text-center py-4">هزینه‌ای ثبت نشده</div>';
+    }
+    renderTransactions(); renderCharts();
+  }
+  function renderTransactions(){
+    const body=document.getElementById('tx-body'); if(!body) return;
+    const q=(document.getElementById('tx-search')?.value||'').toLowerCase().trim();
+    const typeF=document.getElementById('tx-type-filter')?.value||'';
+    let rows=[...state.transactions].reverse();
+    if(typeF) rows=rows.filter(t=>t.type===typeF);
+    if(q) rows=rows.filter(t=>String(t.invoice).includes(q)||(PAY_LABEL[t.pay]||'').toLowerCase().includes(q)||t.type.includes(q)||(t.deviceLabel||'').toLowerCase().includes(q)||(t.lines||[]).some(l=>l.name.toLowerCase().includes(q)));
+    body.innerHTML=rows.length?rows.map(t=>`<tr>
+      <td class="num text-slate-400">${toFa(t.invoice)}</td>
+      <td class="text-slate-400 num text-[11px]">${fmtDateTime(t.ts)}</td>
+      <td>${t.type==='session'?`<span class="text-white text-xs">${esc(t.deviceLabel||'—')}</span>`:'<span class="chip bg-amber-500/15 text-amber-300">بوفه</span>'}</td>
+      <td class="text-[11px] text-slate-400">${PAY_LABEL[t.pay]||t.pay}</td>
+      <td class="num text-slate-300">${t.game?money(t.game):'—'}</td>
+      <td class="num text-amber-300">${t.buffet?money(t.buffet):'—'}</td>
+      <td class="num text-rose-300">${t.discount?'−'+money(t.discount):'—'}</td>
+      <td class="num font-black text-white">${money(t.total)}</td>
+      <td><div class="flex gap-1">
+        <button class="btn btn-ghost !p-1.5 !text-[10px]" onclick="App.reprint('${t.id}')"><i class="fa-solid fa-print"></i></button>
+        <button class="btn btn-ghost !p-1.5 !text-[10px] !text-rose-400" onclick="App.deleteTx('${t.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div></td></tr>`).join(''):'<tr><td colspan="9" class="text-center text-slate-500 py-6 text-xs">تراکنشی یافت نشد</td></tr>';
+  }
+  function reprint(id){ const t=state.transactions.find(x=>x.id===id); if(t) printReceipt(t); }
+  function deleteTx(id){
+    if(!confirm('حذف این تراکنش؟')) return;
+    state.transactions=state.transactions.filter(t=>t.id!==id); save(); renderAccounting(); renderDash(); toast('حذف شد','warn');
+  }
+  function renderBuffet(){
+    const grid=document.getElementById('buffet-grid');
+    if(grid){
+      grid.innerHTML=state.buffet.map(it=>`
+        <div class="glass rounded-xl p-3 cursor-pointer hover:border-amber-500/40 transition group" onclick="App.openMenuItem('${it.id}')">
+          <div class="flex items-start justify-between"><div class="font-bold text-xs text-white truncate">${esc(it.name)}</div>
+          <i class="fa-solid fa-pen text-[9px] text-slate-600 group-hover:text-amber-400"></i></div>
+          <div class="mt-1.5 flex items-center justify-between">
+            <span class="text-emerald-400 font-black text-sm num">${money(it.sell)}</span>
+            <span class="text-[10px] text-slate-500">خرید: ${nf(it.buy)}</span></div>
+          <div class="text-[10px] mt-1 ${it.stock<=5&&it.stock!==999?'text-rose-400':'text-slate-500'}">موجودی: ${it.stock===999?'∞':toFa(it.stock)}</div>
+        </div>`).join('');
+    }
+    const qs=document.getElementById('quick-sale-box');
+    if(qs){
+      qs.innerHTML='<div class="grid grid-cols-2 gap-1.5 max-h-56 overflow-auto pl-1">'+
+        state.buffet.map(it=>`<button class="glass rounded-lg p-2 text-right hover:border-emerald-500/40 ${it.stock<=0&&it.stock!==999?'opacity-40':''}"
+          ${it.stock<=0&&it.stock!==999?'disabled':''} onclick="App.pageQsAdd('${it.id}')">
+          <div class="text-[11px] font-bold text-white truncate">${esc(it.name)}</div>
+          <div class="text-[11px] text-emerald-400 num font-black">${money(it.sell)}</div></button>`).join('')+'</div>';
+      pageQsRender();
+    }
+    const stockEl=document.getElementById('qs-stock');
+    if(stockEl) stockEl.textContent='ارزش موجودی (بهای خرید): '+money(state.buffet.reduce((s,i)=>s+(i.stock===999?0:i.buy*i.stock),0));
+  }
+  function pageQsAdd(id){
+    const line=pageQs.find(x=>x.id===id);
+    if(line) line.qty++; else pageQs.push({id,qty:1});
+    pageQsRender();
+  }
+  function pageQsRender(){
+    const el=document.getElementById('qs-total'); if(!el) return;
+    let total=0; pageQs.forEach(l=>{ const it=state.buffet.find(b=>b.id===l.id); if(it) total+=it.sell*l.qty; });
+    el.textContent=money(total);
+  }
+  function clearQuickSale(){ pageQs=[]; pageQsRender(); toast('سبد پاک شد','warn'); }
+  function finishQuickSale(){
+    if(!pageQs.length){ toast('سبد خالی است','err'); return; }
+    const total=pageQs.reduce((s,l)=>{ const it=state.buffet.find(b=>b.id===l.id); return s+(it?it.sell*l.qty:0); },0);
+    if(!confirm('ثبت فروش سریع به مبلغ '+money(total)+' (نقد)؟')) return;
+    const lines=[]; let buySum=0;
+    pageQs.forEach(l=>{
+      const it=state.buffet.find(b=>b.id===l.id); if(!it) return;
+      if(it.stock!==999) it.stock=Math.max(0,it.stock-l.qty);
+      lines.push({id:it.id,name:it.name,sell:it.sell,qty:l.qty}); buySum+=it.buy*l.qty;
+    });
+    const tx={id:uid(),invoice:++state.seq,type:'buffet',ts:Date.now(),lines,game:0,buffet:total,buffetBuy:buySum,discount:0,total,pay:'cash'};
+    state.transactions.push(tx); pageQs=[]; save(); renderBuffet(); updateKpis(); renderDash(); renderAccounting();
+    toast('فروش سریع ثبت شد — '+money(total)); printReceipt(tx);
+  }
+
+  /* Modal / nav */
+  function openModal(html){
+    document.getElementById('modal-root').innerHTML=`<div class="fixed inset-0 z-[9990] modal-back flex items-center justify-center p-4" onclick="if(event.target===this)App.closeModal()">${html}</div>`;
+    document.body.style.overflow='hidden';
+  }
+  function closeModal(){ document.getElementById('modal-root').innerHTML=''; document.body.style.overflow=''; }
+  const VIEW_META={
+    dashboard:{title:'داشبورد',sub:'نمای کلی درآمد و دستگاه‌ها'},
+    devices:{title:'دستگاه‌ها و تایمرها',sub:'شروع، مکث، انتقال و تسویه'},
+    buffet:{title:'بوفه و فروشگاه',sub:'منو، موجودی و فروش سریع'},
+    accounting:{title:'حسابداری و دخل',sub:'صندوق، هزینه‌ها و تاریخچه'},
+    settings:{title:'تنظیمات',sub:'تعرفه، دستگاه‌ها و بک‌آپ'},
+    admin:{title:'پنل مدیریت',sub:'آمار، امنیت و کنترل کامل'},
+    payment:{title:'دریافت وجه',sub:'شماره کارت و واریزی‌های مشتریان'},
+  };
+  function switchView(name){
+    document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));
+    const el=document.getElementById('view-'+name); if(el) el.classList.remove('hidden');
+    document.querySelectorAll('.side-link').forEach(l=>l.classList.toggle('active',l.dataset.view===name));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+    const meta=VIEW_META[name]||VIEW_META.dashboard;
+    setText('view-title',meta.title); setText('view-sub',meta.sub);
+    if(name==='dashboard') renderDash();
+    if(name==='devices') renderDevices();
+    if(name==='buffet') renderBuffet();
+    if(name==='accounting') renderAccounting();
+    if(name==='settings') renderSettings();
+    if(name==='admin'){ applyAdminGate(); renderAdmin(); }
+    if(name==='payment') renderPayment();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+
+  /* ── Admin panel ── */
+  function isAdmin(){ return !!(state.admin && state.admin.loggedIn); }
+  function applyAdminGate(){
+    const show=isAdmin();
+    document.querySelectorAll('.gated-admin').forEach(el=>el.classList.toggle('hidden',!show));
+    const badge=document.getElementById('admin-lock-badge');
+    const unlockBtn=document.getElementById('admin-unlock-btn');
+    const lockBtn=document.getElementById('admin-lock-btn');
+    const unlockRow=document.getElementById('admin-unlock-row');
+    const body=document.getElementById('admin-body');
+    if(badge){
+      badge.innerHTML=show?'<i class="fa-solid fa-lock-open"></i> باز':'<i class="fa-solid fa-lock"></i> قفل';
+      badge.className='chip '+(show?'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40':'bg-rose-500/20 text-rose-300 border border-rose-500/40');
+    }
+    if(unlockBtn) unlockBtn.classList.toggle('hidden',show);
+    if(lockBtn) lockBtn.classList.toggle('hidden',!show);
+    if(unlockRow) unlockRow.classList.toggle('hidden',show);
+    if(body) body.classList.toggle('hidden',!show);
+  }
+  function adminUnlock(){
+    const inp=document.getElementById('admin-pass-input');
+    const val=(inp&&inp.value)||'';
+    if(val===state.admin.pass){
+      state.admin.loggedIn=true; save(); applyAdminGate(); renderAdmin();
+      toast('خوش آمدید — پنل مدیریت باز شد 👑','ok');
+      if(inp) inp.value='';
+    }else{
+      toast('رمز اشتباه است','err');
+      if(inp){ inp.value=''; inp.focus(); }
+    }
+  }
+  function adminLock(){
+    state.admin.loggedIn=false; save(); applyAdminGate();
+    toast('پنل مدیریت قفل شد','warn');
+  }
+  function adminChangePass(){
+    const inp=document.getElementById('adm-new-pass');
+    const val=(inp&&inp.value)||'';
+    if(val.length<4){ toast('رمز باید حداقل ۴ کاراکتر باشد','err'); return; }
+    state.admin.pass=val; save();
+    if(inp) inp.value='';
+    toast('رمز پنل مدیریت تغییر کرد ✅','ok');
+  }
+  function saveOwnerName(){
+    const inp=document.getElementById('adm-owner-name');
+    state.settings.ownerName=(inp&&inp.value||'').trim(); save();
+    toast('نام صاحب مغازه ذخیره شد ✅','ok');
+  }
+  function renderAdmin(){
+    if(!isAdmin()) return;
+    const totalRev=state.transactions.reduce((s,t)=>s+(t.total||0),0);
+    const totalExp=state.expenses.reduce((s,e)=>s+(e.amount||0),0);
+    const buffetBuy=state.transactions.reduce((s,t)=>s+(t.buffetBuy||0),0);
+    const g=id=>document.getElementById(id);
+    if(g('adm-total')) g('adm-total').textContent=money(totalRev);
+    if(g('adm-txcount')) g('adm-txcount').textContent=toFa(state.transactions.length);
+    if(g('adm-exp')) g('adm-exp').textContent=money(totalExp);
+    if(g('adm-net')) g('adm-net').textContent=money(totalRev-buffetBuy-totalExp);
+    if(g('adm-owner-name') && document.activeElement!==g('adm-owner-name')) g('adm-owner-name').value=state.settings.ownerName||'';
+    const q=(g('adm-tx-search')&&g('adm-tx-search').value||'').toLowerCase().trim();
+    let rows=[...state.transactions].reverse();
+    if(q) rows=rows.filter(t=>String(t.invoice).includes(q)||(PAY_LABEL[t.pay]||'').toLowerCase().includes(q)||(t.deviceLabel||'').toLowerCase().includes(q));
+    const body=g('adm-tx-body');
+    if(body){
+      body.innerHTML=rows.length?rows.slice(0,100).map(t=>`<tr>
+        <td class="num text-slate-400">${toFa(t.invoice)}</td>
+        <td class="text-slate-400 num text-[11px]">${fmtDateTime(t.ts)}</td>
+        <td>${t.type==='session'?esc(t.deviceLabel||'—'):'<span class="chip bg-amber-500/15 text-amber-300">بوفه</span>'}</td>
+        <td class="num font-black text-white">${money(t.total)}</td>
+        <td><button class="btn btn-ghost !p-1.5 !text-[10px] !text-rose-400" onclick="App.deleteTx('${t.id}')"><i class="fa-solid fa-trash"></i></button></td>
+      </tr>`).join(''):'<tr><td colspan="5" class="text-center text-slate-500 py-4 text-xs">تراکنشی نیست</td></tr>';
+    }
+    const devStats={};
+    state.transactions.filter(t=>t.type==='session').forEach(t=>{
+      const k=t.deviceLabel||'نامشخص';
+      devStats[k]=(devStats[k]||0)+(t.game||0);
+    });
+    const ds=g('adm-device-stats');
+    if(ds){
+      const entries=Object.entries(devStats).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      const max=entries.length?entries[0][1]:1;
+      ds.innerHTML=entries.length?entries.map(([k,v])=>`
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-slate-300 truncate">${esc(k)}</span>
+          <span class="flex items-center gap-2 min-w-0">
+            <span class="h-1.5 rounded-full bg-violet-500/70" style="width:${Math.max(8,Math.round(v/max*80))}px"></span>
+            <span class="num text-violet-300 font-bold shrink-0">${money(v)}</span>
+          </span>
+        </div>`).join(''):'<div class="text-slate-500 text-xs">داده‌ای نیست</div>';
+    }
+    const payStats={pos:0,cash:0,transfer:0};
+    state.transactions.forEach(t=>{ if(payStats[t.pay]!=null) payStats[t.pay]+=(t.total||0); });
+    const ps=g('adm-pay-stats');
+    if(ps){
+      const labels={pos:'کارت‌خوان',cash:'نقد',transfer:'کارت به کارت'};
+      const max=Math.max(payStats.pos,payStats.cash,payStats.transfer,1);
+      ps.innerHTML=Object.keys(payStats).map(k=>`
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-slate-300">${labels[k]}</span>
+          <span class="flex items-center gap-2">
+            <span class="h-1.5 rounded-full ${k==='pos'?'bg-sky-500':k==='cash'?'bg-emerald-500':'bg-violet-500'}" style="width:${Math.max(8,Math.round(payStats[k]/max*80))}px"></span>
+            <span class="num font-bold shrink-0 ${k==='pos'?'text-sky-300':k==='cash'?'text-emerald-300':'text-violet-300'}">${money(payStats[k])}</span>
+          </span>
+        </div>`).join('');
+    }
+  }
+
+  /* ── Payment cards & logs ── */
+  function renderPayment(){
+    const grid=document.getElementById('pay-cards-grid');
+    if(grid){
+      grid.innerHTML=state.payCards.length?state.payCards.map(c=>`
+        <div class="glass rounded-2xl p-4 cursor-pointer hover:border-emerald-500/40 transition group" onclick="App.copyCard('${c.id}')" title="برای کپی کلیک کنید">
+          <div class="flex items-start justify-between mb-2">
+            <div class="font-extrabold text-white text-sm">${esc(c.title)}</div>
+            <div class="flex gap-1" onclick="event.stopPropagation()">
+              <button class="btn btn-ghost !p-1.5 !text-[10px]" onclick="App.openPayCard('${c.id}')"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-ghost !p-1.5 !text-[10px] !text-rose-400" onclick="App.deletePayCard('${c.id}')"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+          <div class="rounded-xl bg-black/40 border border-emerald-500/20 p-3 mb-2 text-center">
+            <div class="text-lg font-black text-emerald-300 num tracking-widest" dir="ltr">${esc(c.card)}</div>
+          </div>
+          <div class="flex justify-between text-[11px]">
+            <span class="text-slate-400">به نام: <span class="text-white font-bold">${esc(c.holder)}</span></span>
+            <span class="chip bg-sky-500/15 text-sky-300 border border-sky-500/30">${esc(c.bank||'')}</span>
+          </div>
+          <div class="text-[10px] text-slate-600 mt-1 group-hover:text-emerald-400"><i class="fa-solid fa-copy"></i> برای کپی کلیک کنید</div>
+        </div>`).join(''):'<div class="col-span-2 text-center text-slate-500 text-sm py-6">کارتی ثبت نشده</div>';
+    }
+    const logList=document.getElementById('pay-log-list');
+    if(logList){
+      const logs=[...state.payLogs].reverse().slice(0,30);
+      logList.innerHTML=logs.length?logs.map(l=>`
+        <div class="flex items-center justify-between rounded-lg bg-black/30 border border-white/5 px-3 py-2">
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-white truncate">${esc(l.name||'بدون نام')}</div>
+            <div class="text-[10px] text-slate-500 num">${fmtDateTime(l.ts)} · ${esc(l.ref||'—')}</div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="num text-emerald-300 font-black text-xs">${money(l.amount)}</span>
+            <button class="btn btn-ghost !p-1 !text-[10px] !text-rose-400" onclick="App.deletePayLog('${l.id}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>`).join(''):'<div class="text-xs text-slate-500 text-center py-4">واریزی ثبت نشده</div>';
+    }
+    const totalEl=document.getElementById('pay-log-total');
+    if(totalEl) totalEl.textContent=money(state.payLogs.reduce((s,l)=>s+(l.amount||0),0));
+  }
+  function openPayCard(editId){
+    const c=editId?state.payCards.find(x=>x.id===editId):null;
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-sm fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white text-sm">${c?'ویرایش کارت':'افزودن کارت بانکی'}</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="text-[11px] text-slate-400 font-bold">عنوان (مثلاً بانک سامان)</label>
+        <input id="pc-title" class="field mt-1 mb-2" value="${c?esc(c.title):''}">
+        <label class="text-[11px] text-slate-400 font-bold">شماره کارت</label>
+        <input id="pc-card" class="field mt-1 mb-2 num" dir="ltr" placeholder="6219-8610-XXXX-XXXX" value="${c?esc(c.card):''}">
+        <label class="text-[11px] text-slate-400 font-bold">به نام</label>
+        <input id="pc-holder" class="field mt-1 mb-2" value="${c?esc(c.holder):''}">
+        <label class="text-[11px] text-slate-400 font-bold">نام بانک</label>
+        <input id="pc-bank" class="field mt-1" value="${c?esc(c.bank||''):''}">
+        <div class="flex gap-2 mt-4">
+          <button class="btn btn-ghost flex-1" onclick="App.closeModal()">انصراف</button>
+          <button class="btn btn-neon flex-1" onclick="App.savePayCard('${editId||''}')"><i class="fa-solid fa-floppy-disk"></i> ذخیره</button>
+        </div>
+      </div>`);
+  }
+  function savePayCard(editId){
+    const title=(document.getElementById('pc-title')?.value||'').trim();
+    const card=(document.getElementById('pc-card')?.value||'').trim();
+    const holder=(document.getElementById('pc-holder')?.value||'').trim();
+    const bank=(document.getElementById('pc-bank')?.value||'').trim();
+    if(!card||!holder){ toast('شماره کارت و نام صاحب لازم است','err'); return; }
+    if(editId){ const c=state.payCards.find(x=>x.id===editId); if(c) Object.assign(c,{title,card,holder,bank}); }
+    else state.payCards.push({id:uid(),title:title||'کارت',card,holder,bank});
+    save(); closeModal(); renderPayment(); toast('کارت ذخیره شد ✅','ok');
+  }
+  function deletePayCard(id){
+    if(!confirm('حذف این کارت؟')) return;
+    state.payCards=state.payCards.filter(c=>c.id!==id); save(); renderPayment();
+  }
+  function copyCard(id){
+    const c=state.payCards.find(x=>x.id===id); if(!c) return;
+    const text=c.card.replace(/-/g,'');
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>toast('شماره کارت کپی شد 📋','ok')).catch(()=>fallbackCopy(text));
+      } else fallbackCopy(text);
+    }catch(e){ fallbackCopy(text); }
+  }
+  function fallbackCopy(text){
+    try{
+      const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+      toast('شماره کارت کپی شد 📋','ok');
+    }catch(e){ toast('کپی ممکن نشد — دستی کپی کنید','warn'); }
+  }
+  function openPayLog(){
+    openModal(`
+      <div class="glass rounded-2xl p-5 w-full max-w-sm fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-white text-sm"><i class="fa-solid fa-money-bill-transfer text-emerald-400 ml-2"></i> ثبت واریزی مشتری</h3>
+          <button class="btn btn-ghost !p-2" onclick="App.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <label class="text-[11px] text-slate-400 font-bold">نام مشتری</label>
+        <input id="pl-name" class="field mt-1 mb-2" placeholder="مثلاً محمدی">
+        <label class="text-[11px] text-slate-400 font-bold">مبلغ (تومان)</label>
+        <input id="pl-amount" type="number" min="0" class="field mt-1 mb-2" placeholder="0">
+        <label class="text-[11px] text-slate-400 font-bold">پیگیری / شرح</label>
+        <input id="pl-ref" class="field mt-1 mb-3" placeholder="کد پیگیری یا شرح">
+        <label class="text-[11px] text-slate-400 font-bold">به حساب</label>
+        <select id="pl-card" class="field mb-1">${state.payCards.map(c=>`<option value="${c.id}">${esc(c.title)} — ${esc(c.card)}</option>`).join('')||'<option value="">کارتی ثبت نشده</option>'}</select>
+        <div class="flex gap-2 mt-4">
+          <button class="btn btn-ghost flex-1" onclick="App.closeModal()">انصراف</button>
+          <button class="btn btn-neon flex-1" onclick="App.savePayLog()"><i class="fa-solid fa-check"></i> ثبت</button>
+        </div>
+      </div>`);
+  }
+  function savePayLog(){
+    const name=(document.getElementById('pl-name')?.value||'').trim();
+    const amount=Number(document.getElementById('pl-amount')?.value||0);
+    const ref=(document.getElementById('pl-ref')?.value||'').trim();
+    const cardId=document.getElementById('pl-card')?.value||'';
+    if(amount<=0){ toast('مبلغ را وارد کنید','err'); return; }
+    state.payLogs.push({id:uid(),ts:Date.now(),name,amount,ref,cardId});
+    save(); closeModal(); renderPayment(); toast('واریزی ثبت شد ✅','ok');
+  }
+  function deletePayLog(id){
+    if(!confirm('حذف این واریزی؟')) return;
+    state.payLogs=state.payLogs.filter(l=>l.id!==id); save(); renderPayment();
+  }
+
+  /* Live tick */
+  const alarmed=new Set();
+  function tick(){
+    const now=Date.now(), d=new Date();
+    setText('side-clock',toFa(P2(d.getHours())+':'+P2(d.getMinutes())+':'+P2(d.getSeconds())));
+    setText('side-date',fmtJDate(d));
+    Object.keys(state.sessions).forEach(id=>{
+      const s=state.sessions[id];
+      const elEl=document.querySelector('[data-el="'+id+'"]');
+      if(elEl) elEl.textContent=fmtDuration(sessionElapsed(s,now));
+      const rem=sessionRemaining(s,now);
+      const remEl=document.querySelector('[data-rem="'+id+'"]');
+      if(remEl&&rem!==null) remEl.textContent=fmtDuration(rem);
+      const costEl=document.querySelector('[data-cost="'+id+'"]');
+      if(costEl) costEl.textContent=money(sessionGameCost(s,now)+sessionBuffetTotal(s));
+      if(s.mode==='fixed'&&rem!==null&&!s.pausedAt){
+        const warnMs=(state.settings.warnSecs||30)*1000;
+        if(rem<=0){
+          if(!alarmed.has(s.id+':end')){ alarmed.add(s.id+':end'); beep(5); toast('⏰ زمان دستگاه تمام شد!','err'); renderDevices(); }
+        }else if(rem<=warnMs){
+          if(!alarmed.has(s.id+':warn')){ alarmed.add(s.id+':warn'); beep(2); toast('⏳ نزدیک پایان تایم محدود…','warn'); renderDevices(); }
+        }
+      }
+    });
+    if(now%15000<600) updateKpis();
+  }
+  function renderAll(){ renderDevices(); renderBuffet(); renderDash(); renderAccounting(); renderSettings(); renderPayment(); applyAdminGate(); if(isAdmin()) renderAdmin(); updateKpis(); }
+  function boot(){
+    document.querySelectorAll('.side-link').forEach(el=>el.addEventListener('click',()=>switchView(el.dataset.view)));
+    document.querySelectorAll('.tab-btn').forEach(el=>el.addEventListener('click',()=>switchView(el.dataset.view)));
+    renderAll(); applyAdminGate(); switchView('dashboard');
+    setInterval(tick,500); tick();
+    const active=Object.keys(state.sessions).length;
+    if(active) toast(toFa(active)+' جلسه فعال بازیابی شد ⏱','ok');
+  }
+  return {
+    boot, switchView, openStart, confirmStart, pauseSession, resumeSession, removeSessionForce,
+    changePlayers, openMove, doMove, openCheckout, checkoutRecalc, checkoutFinish, checkoutPrint,
+    openBuffetPicker, pickBuffet, openQuickSale, qsAdd, qsQty, qsFinish, closeModal,
+    openMenuItem, saveBuffetItem, deleteBuffetItem, openExpense, saveExpense, deleteExpense,
+    closeShift, exportBackup, importBackup, resetDaily, hardReset, saveTariffs, saveSettings,
+    openDeviceManager, addDevice, removeDevice, renderTransactions, deleteTx, reprint,
+    clearQuickSale, finishQuickSale, pageQsAdd, openModal, closeModal,
+    adminUnlock, adminLock, adminChangePass, saveOwnerName, renderAdmin,
+    openPayCard, savePayCard, deletePayCard, copyCard, openPayLog, savePayLog, deletePayLog, renderPayment,
+  };
+})();
+document.addEventListener('DOMContentLoaded', App.boot);
+</script>
+</body>
+</html>
